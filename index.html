@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b5f8a">
+<meta name="description" content="Offline hypertension (BP) screening tool for community screening camps">
+<title>BP Screening – Scudder College of Nursing</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="title" data-i18n="appTitle">Hypertension Screening</div>
+    <div class="subtitle" data-i18n="appSubtitle">Scudder College of Nursing, Ranipet</div>
+  </div>
+  <button id="langToggle" class="lang-btn" type="button" lang="ta" aria-label="Switch language / மொழி மாற்று">தமிழ்</button>
+</header>
+
+<main>
+<!-- ============ SCREEN (register + readings) ============ -->
+<section id="view-screen" class="view active" aria-labelledby="h-screen">
+  <h2 id="h-screen" data-i18n="screenHeading">New screening</h2>
+  <div id="editBanner" class="card" hidden style="background:#fff8e1;border-color:#f9a825">
+    <strong data-i18n="editingRecord">Editing an existing record</strong>
+    <div class="btn-row" style="margin-top:8px"><button type="button" class="btn small" id="cancelEdit" data-i18n="cancelEdit">Cancel edit</button></div>
+  </div>
+  <form id="screenForm" novalidate autocomplete="off">
+    <div id="formErrors" class="error-summary" role="alert" hidden></div>
+
+    <fieldset class="card">
+      <legend data-i18n="secPerson">1. Person details</legend>
+      <div class="field" data-f="name">
+        <label class="lbl" for="f-name"><span data-i18n="name">Name</span> <span class="req">*</span></label>
+        <input id="f-name" name="name" type="text" maxlength="80">
+        <div class="err"></div>
+      </div>
+      <div class="field age-field" data-f="age">
+          <label class="lbl" for="f-age"><span data-i18n="age">Age (years)</span> <span class="req">*</span></label>
+          <input id="f-age" name="age" type="number" inputmode="numeric" min="18" max="120" step="1">
+          <div class="err"></div>
+        </div>
+      <div class="field" data-f="sex">
+          <span class="lbl"><span data-i18n="sex">Sex</span> <span class="req">*</span></span>
+          <div class="seg" role="radiogroup">
+            <label><input type="radio" name="sex" value="M"><span data-i18n="male">Male</span></label>
+            <label><input type="radio" name="sex" value="F"><span data-i18n="female">Female</span></label>
+            <label><input type="radio" name="sex" value="O"><span data-i18n="other">Other</span></label>
+          </div>
+          <div class="err"></div>
+        </div>
+      <div class="field" data-f="village">
+        <label class="lbl" for="f-village"><span data-i18n="village">Village / Area</span> <span class="req">*</span></label>
+        <input id="f-village" name="village" type="text" maxlength="60" list="villageList">
+        <datalist id="villageList"></datalist>
+        <div class="err"></div>
+      </div>
+      <div class="field" data-f="phone">
+        <label class="lbl" for="f-phone"><span data-i18n="phone">Phone number</span> <span class="hint" data-i18n="optional">(optional)</span></label>
+        <input id="f-phone" name="phone" type="tel" inputmode="tel" maxlength="15">
+        <div class="err"></div>
+      </div>
+      <div class="field" data-f="consent">
+        <label class="check consent">
+          <input type="checkbox" name="consent" id="f-consent">
+          <span><strong data-i18n="consentLabel">Consent obtained</strong> <span class="req">*</span><br>
+          <span class="hint" data-i18n="consentText">The person agreed to BP screening and to their anonymised data being used for health research.</span></span>
+        </label>
+        <div class="err"></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend data-i18n="secBP">2. Blood pressure</legend>
+      <p class="hint" data-i18n="bpHint">Seated, rested 5 minutes. Take two readings 1–2 minutes apart.</p>
+      <div class="reading">
+        <div class="reading-title" data-i18n="reading1">Reading 1</div>
+        <div class="row2">
+          <div class="field" data-f="sbp1">
+            <label class="lbl" for="f-sbp1"><span data-i18n="systolic">Systolic (upper)</span> <span class="unit">mmHg</span></label>
+            <input id="f-sbp1" name="sbp1" type="number" inputmode="numeric" min="60" max="300">
+            <div class="err"></div>
+          </div>
+          <div class="field" data-f="dbp1">
+            <label class="lbl" for="f-dbp1"><span data-i18n="diastolic">Diastolic (lower)</span> <span class="unit">mmHg</span></label>
+            <input id="f-dbp1" name="dbp1" type="number" inputmode="numeric" min="30" max="200">
+            <div class="err"></div>
+          </div>
+        </div>
+      </div>
+      <div class="reading">
+        <div class="reading-title" data-i18n="reading2">Reading 2</div>
+        <div class="row2">
+          <div class="field" data-f="sbp2">
+            <label class="lbl" for="f-sbp2"><span data-i18n="systolic">Systolic (upper)</span> <span class="unit">mmHg</span></label>
+            <input id="f-sbp2" name="sbp2" type="number" inputmode="numeric" min="60" max="300">
+            <div class="err"></div>
+          </div>
+          <div class="field" data-f="dbp2">
+            <label class="lbl" for="f-dbp2"><span data-i18n="diastolic">Diastolic (lower)</span> <span class="unit">mmHg</span></label>
+            <input id="f-dbp2" name="dbp2" type="number" inputmode="numeric" min="30" max="200">
+            <div class="err"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field" data-f="pulse">
+        <label class="lbl" for="f-pulse"><span data-i18n="pulse">Pulse</span> <span class="unit" data-i18n="bpm">beats/min</span></label>
+        <input id="f-pulse" name="pulse" type="number" inputmode="numeric" min="30" max="220">
+        <div class="err"></div>
+      </div>
+      <div id="liveAvg" class="live" aria-live="polite">—</div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend data-i18n="secRisk">3. Risk factors</legend>
+      <label class="check"><input type="checkbox" name="tobacco"><span data-i18n="tobacco">Tobacco use (smoking or chewing)</span></label>
+      <label class="check"><input type="checkbox" name="alcohol"><span data-i18n="alcohol">Alcohol use</span></label>
+      <label class="check"><input type="checkbox" name="diabetes"><span data-i18n="diabetes">Diabetes (known)</span></label>
+      <label class="check"><input type="checkbox" name="famHx"><span data-i18n="famHx">Family history of hypertension</span></label>
+      <div class="row2" style="margin-top:10px">
+        <div class="field" data-f="heightCm">
+          <label class="lbl" for="f-height"><span data-i18n="height">Height</span> <span class="unit">cm</span></label>
+          <input id="f-height" name="heightCm" type="number" inputmode="decimal" step="0.1" min="90" max="230">
+          <div class="err"></div>
+        </div>
+        <div class="field" data-f="weightKg">
+          <label class="lbl" for="f-weight"><span data-i18n="weight">Weight</span> <span class="unit">kg</span></label>
+          <input id="f-weight" name="weightKg" type="number" inputmode="decimal" step="0.1" min="20" max="250">
+          <div class="err"></div>
+        </div>
+      </div>
+      <div id="liveBmi" class="live" aria-live="polite">BMI: —</div>
+      <div class="field" data-f="waistCm" style="margin-top:12px">
+        <label class="lbl" for="f-waist"><span data-i18n="waist">Waist circumference</span> <span class="unit">cm</span></label>
+        <input id="f-waist" name="waistCm" type="number" inputmode="decimal" step="0.1" min="40" max="200">
+        <div class="err"></div>
+      </div>
+    </fieldset>
+
+    <fieldset class="card">
+      <legend data-i18n="secDetails">4. Screening details</legend>
+      <div class="row2">
+        <div class="field" data-f="screenDate">
+          <label class="lbl" for="f-date"><span data-i18n="screenDate">Screening date</span> <span class="req">*</span></label>
+          <input id="f-date" name="screenDate" type="date">
+          <div class="err"></div>
+        </div>
+        <div class="field" data-f="screenedBy">
+          <label class="lbl" for="f-by"><span data-i18n="screenedBy">Screened by</span></label>
+          <input id="f-by" name="screenedBy" type="text" maxlength="60">
+          <div class="err"></div>
+        </div>
+      </div>
+      <div class="field" data-f="notes">
+        <label class="lbl" for="f-notes"><span data-i18n="notes">Notes</span></label>
+        <textarea id="f-notes" name="notes" maxlength="500"></textarea>
+      </div>
+    </fieldset>
+
+    <button type="submit" class="btn primary big" id="saveBtn" data-i18n="save">Save</button>
+  </form>
+
+  <div id="resultPanel" hidden></div>
+</section>
+
+<!-- ============ FOLLOW-UP ============ -->
+<section id="view-followup" class="view" aria-labelledby="h-fu">
+  <h2 id="h-fu" data-i18n="fuHeading">Follow-up list</h2>
+  <p class="hint" data-i18n="fuHint">People flagged High or Urgent. Urgent = refer same day; High = recheck within 7 days.</p>
+  <div class="filter-chips" id="fuFilters">
+    <button type="button" class="chip active" data-fu="pending" data-i18n="fPending">Pending</button>
+    <button type="button" class="chip" data-fu="overdue" data-i18n="fOverdue">Overdue</button>
+    <button type="button" class="chip" data-fu="done" data-i18n="fDone">Done</button>
+    <button type="button" class="chip" data-fu="all" data-i18n="fAll">All</button>
+  </div>
+  <div id="fuList"></div>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<section id="view-dashboard" class="view" aria-labelledby="h-dash">
+  <h2 id="h-dash" data-i18n="dashHeading">Dashboard</h2>
+  <label class="toggle-line"><input type="checkbox" id="dashIncludeSample" checked><span data-i18n="includeSample">Include sample records</span></label>
+  <div id="dashContent"></div>
+</section>
+
+<!-- ============ RECORDS & DATA ============ -->
+<section id="view-records" class="view" aria-labelledby="h-rec">
+  <h2 id="h-rec" data-i18n="recHeading">Records &amp; data</h2>
+  <div class="card">
+    <h3 data-i18n="dataTools">Data tools</h3>
+    <div class="btn-col">
+      <button type="button" class="btn primary" id="exportCsv" data-i18n="exportCsv">Export CSV (all records)</button>
+      <button type="button" class="btn" id="loadSample" data-i18n="loadSample">Load sample data</button>
+      <button type="button" class="btn" id="removeSample" data-i18n="removeSample">Remove sample data</button>
+      <button type="button" class="btn danger" id="clearAll" data-i18n="clearAll">Clear all data</button>
+    </div>
+    <p class="hint" id="storageInfo"></p>
+    <p class="hint" data-i18n="storageWarn">Data is stored only on this device/browser. Export CSV regularly as a backup.</p>
+  </div>
+  <div class="field">
+    <label class="lbl" for="recSearch" data-i18n="search">Search name or village</label>
+    <input id="recSearch" type="search">
+  </div>
+  <div id="recList"></div>
+</section>
+<p class="foot-note">HTN Screening v1 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
+</main>
+
+<nav class="tabbar" aria-label="Main">
+  <button type="button" data-view="screen" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    <span data-i18n="tabScreen">Screen</span></button>
+  <button type="button" data-view="followup">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    <span data-i18n="tabFollowup">Follow-up</span><span class="tab-badge" id="fuBadge"></span></button>
+  <button type="button" data-view="dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+    <span data-i18n="tabDashboard">Dashboard</span></button>
+  <button type="button" data-view="records">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    <span data-i18n="tabRecords">Records</span></button>
+</nav>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<noscript><p style="padding:16px">Please enable JavaScript to use this app.</p></noscript>
+<script src="app.js"></script>
+</body>
+</html>
