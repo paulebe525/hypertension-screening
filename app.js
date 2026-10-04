@@ -6,6 +6,10 @@
 
 var STORE_KEY = 'htnScreening.v1.records';
 var PREF_KEY = 'htnScreening.v1.prefs';
+var SYNC_KEY = 'htnScreening.v1.sync';        // {url, key, lastSyncAt}
+var DEVICE_KEY = 'htnScreening.v1.deviceId';  // generated once per phone/browser
+var APP_VERSION = '1.1';
+var SYNC_BATCH = 50;
 var CATS = ['normal', 'elevated', 'high', 'urgent'];
 var CAT_COLORS = { normal: '#2e7d32', elevated: '#f9a825', high: '#d84315', urgent: '#b71c1c' };
 var AGE_GROUPS = [
@@ -57,7 +61,7 @@ en: {
   bmiObeseStat: 'BMI ≥ 25', noData: 'No records yet. Screen someone or load sample data.',
   recHeading: 'Records & data', dataTools: 'Data tools', exportCsv: 'Export CSV (all records)',
   loadSample: 'Load sample data', removeSample: 'Remove sample data', clearAll: 'Clear all data',
-  storageWarn: 'Data is stored only on this device/browser. Export CSV regularly as a backup.',
+  storageWarn: 'Data is always saved on this phone first. If Google Sheet sync is set up, a copy is also sent to the sheet. Export CSV regularly as a backup.',
   search: 'Search name or village', footNote: 'Screening tool only — not a diagnosis.',
   tabScreen: 'Screen', tabFollowup: 'Follow-up', tabDashboard: 'Dashboard', tabRecords: 'Records',
   edit: 'Edit', del: 'Delete', details: 'Details',
@@ -119,7 +123,7 @@ ta: {
   bmiObeseStat: 'BMI ≥ 25', noData: 'இன்னும் பதிவுகள் இல்லை. ஒருவரைப் பரிசோதிக்கவும் அல்லது மாதிரித் தரவை ஏற்றவும்.',
   recHeading: 'பதிவுகள் & தரவு', dataTools: 'தரவுக் கருவிகள்', exportCsv: 'CSV ஆகப் பதிவிறக்கு (அனைத்தும்)',
   loadSample: 'மாதிரித் தரவை ஏற்று', removeSample: 'மாதிரித் தரவை நீக்கு', clearAll: 'அனைத்துத் தரவையும் அழி',
-  storageWarn: 'தரவு இந்தக் கைபேசி/உலாவியில் மட்டுமே சேமிக்கப்படுகிறது. அடிக்கடி CSV ஆகப் பதிவிறக்கிப் பாதுகாக்கவும்.',
+  storageWarn: 'தரவு முதலில் இந்தக் கைபேசியில் சேமிக்கப்படுகிறது. Google Sheet ஒத்திசைவு அமைக்கப்பட்டிருந்தால், ஒரு நகல் Sheet-க்கும் அனுப்பப்படும். அடிக்கடி CSV ஆகப் பதிவிறக்கிப் பாதுகாக்கவும்.',
   search: 'பெயர் அல்லது கிராமத்தைத் தேடு', footNote: 'இது பரிசோதனைக் கருவி மட்டுமே — நோய் கண்டறிதல் அல்ல.',
   tabScreen: 'பரிசோதனை', tabFollowup: 'மறு பரிசோதனை', tabDashboard: 'தகவல்', tabRecords: 'பதிவுகள்',
   edit: 'திருத்து', del: 'நீக்கு', details: 'விவரங்கள்',
@@ -141,6 +145,52 @@ ta: {
   errDate: 'சரியான தேதியை உள்ளிடவும் (எதிர்காலத் தேதி கூடாது)', errSummary: 'சிவப்பில் குறிக்கப்பட்ட இடங்களைச் சரிசெய்யவும்.'
 }
 };
+
+var SYNC_I18N = {
+en: {
+  syncTitle: 'Google Sheet sync', syncSettings: 'Sync settings', syncUrl: 'Web App URL', syncKey: 'Secret key', showKey: 'Show', hideKey: 'Hide',
+  syncSave: 'Save settings', syncTest: 'Test connection', syncNow: 'Sync now', syncCopyLink: 'Copy setup link',
+  syncLinkWarn: 'The setup link contains the secret key — share it only with your screening team.',
+  deviceId: 'Device ID', syncSampleNote: 'Sample records are never sent to the sheet.',
+  syncStNotSetup: 'Not set up — records are saved on this phone only.',
+  syncStAllSynced: 'All records synced', syncStPending: '{n} record(s) waiting to sync',
+  syncStOffline: 'Offline — {n} record(s) will sync when internet returns', syncStSyncing: 'Syncing…',
+  syncStError: 'Sync failed: {e}. {n} record(s) kept safely on this phone.', syncLast: 'Last synced',
+  syncErr_unauthorized: 'wrong key', syncErr_network: 'cannot reach the sheet (check internet / URL)',
+  syncErr_key_not_set: 'KEY not set in the Apps Script', syncErr_bad: 'unexpected reply (check the URL and that access is "Anyone")',
+  syncErr_busy: 'sheet busy, will retry', syncErr_other: 'server error',
+  syncTesting: 'Testing…', syncTestOk: 'Connected — key accepted ✓', syncTestFail: 'Connection failed: {e}',
+  syncSaved: 'Sync settings saved', syncDisabled: 'Sync turned off on this phone',
+  syncInvalidUrl: 'Enter a valid https:// Web App URL', syncNeedKey: 'Enter the secret key',
+  syncLinkCopied: 'Setup link copied — paste it in WhatsApp/email to your team', syncLinkReady: 'Copy the link below and share it with your team',
+  syncSetupConfirm: 'Set up Google Sheet sync on this phone?\n\nRecords will be sent to:\n{u}',
+  syncNotGoogle: 'Warning: this is not a Google Apps Script address.',
+  syncTagSynced: 'Synced', syncTagPending: 'Not synced yet', syncTagSample: 'Sample – not synced',
+  syncSyncedN: '{n} record(s) synced', syncNotSetupToast: 'Set up sync first (Web App URL and key)', syncLine: 'Sheet sync'
+},
+ta: {
+  syncTitle: 'Google Sheet ஒத்திசைவு', syncSettings: 'ஒத்திசைவு அமைப்புகள்', syncUrl: 'Web App இணைப்பு (URL)', syncKey: 'ரகசியக் குறியீடு', showKey: 'காட்டு', hideKey: 'மறை',
+  syncSave: 'அமைப்புகளைச் சேமி', syncTest: 'இணைப்பைச் சோதி', syncNow: 'இப்போது ஒத்திசை', syncCopyLink: 'அமைப்பு இணைப்பை நகலெடு',
+  syncLinkWarn: 'அமைப்பு இணைப்பில் ரகசியக் குறியீடு உள்ளது — உங்கள் பரிசோதனைக் குழுவுடன் மட்டும் பகிரவும்.',
+  deviceId: 'சாதன அடையாள எண்', syncSampleNote: 'மாதிரிப் பதிவுகள் Sheet-க்கு அனுப்பப்படாது.',
+  syncStNotSetup: 'அமைக்கப்படவில்லை — பதிவுகள் இந்தக் கைபேசியில் மட்டும் சேமிக்கப்படுகின்றன.',
+  syncStAllSynced: 'அனைத்துப் பதிவுகளும் ஒத்திசைக்கப்பட்டன', syncStPending: '{n} பதிவுகள் ஒத்திசைக்கக் காத்திருக்கின்றன',
+  syncStOffline: 'இணையம் இல்லை — இணையம் வந்ததும் {n} பதிவுகள் ஒத்திசைக்கப்படும்', syncStSyncing: 'ஒத்திசைக்கிறது…',
+  syncStError: 'ஒத்திசைவு தோல்வி: {e}. {n} பதிவுகள் இந்தக் கைபேசியில் பாதுகாப்பாக உள்ளன.', syncLast: 'கடைசியாக ஒத்திசைத்தது',
+  syncErr_unauthorized: 'தவறான குறியீடு', syncErr_network: 'Sheet-ஐ அணுக முடியவில்லை (இணையம் / URL-ஐச் சரிபார்க்கவும்)',
+  syncErr_key_not_set: 'Apps Script-இல் KEY அமைக்கப்படவில்லை', syncErr_bad: 'எதிர்பாராத பதில் (URL மற்றும் "Anyone" அனுமதியைச் சரிபார்க்கவும்)',
+  syncErr_busy: 'Sheet பரபரப்பாக உள்ளது, மீண்டும் முயலும்', syncErr_other: 'சர்வர் பிழை',
+  syncTesting: 'சோதிக்கிறது…', syncTestOk: 'இணைப்பு சரி — குறியீடு ஏற்கப்பட்டது ✓', syncTestFail: 'இணைப்பு தோல்வி: {e}',
+  syncSaved: 'ஒத்திசைவு அமைப்புகள் சேமிக்கப்பட்டன', syncDisabled: 'இந்தக் கைபேசியில் ஒத்திசைவு நிறுத்தப்பட்டது',
+  syncInvalidUrl: 'சரியான https:// Web App இணைப்பை உள்ளிடவும்', syncNeedKey: 'ரகசியக் குறியீட்டை உள்ளிடவும்',
+  syncLinkCopied: 'அமைப்பு இணைப்பு நகலெடுக்கப்பட்டது — WhatsApp/மின்னஞ்சலில் குழுவுக்கு அனுப்பவும்', syncLinkReady: 'கீழே உள்ள இணைப்பை நகலெடுத்துக் குழுவுடன் பகிரவும்',
+  syncSetupConfirm: 'இந்தக் கைபேசியில் Google Sheet ஒத்திசைவை அமைக்கவா?\n\nபதிவுகள் இங்கு அனுப்பப்படும்:\n{u}',
+  syncNotGoogle: 'எச்சரிக்கை: இது Google Apps Script முகவரி அல்ல.',
+  syncTagSynced: 'ஒத்திசைந்தது', syncTagPending: 'இன்னும் ஒத்திசைக்கவில்லை', syncTagSample: 'மாதிரி – ஒத்திசைக்கப்படாது',
+  syncSyncedN: '{n} பதிவுகள் ஒத்திசைக்கப்பட்டன', syncNotSetupToast: 'முதலில் ஒத்திசைவை அமைக்கவும் (URL மற்றும் குறியீடு)', syncLine: 'Sheet ஒத்திசைவு'
+}
+};
+Object.keys(SYNC_I18N).forEach(function (l) { Object.keys(SYNC_I18N[l]).forEach(function (k) { I18N[l][k] = SYNC_I18N[l][k]; }); });
 
 /* ------------------------------------------------------------- utilities */
 function $(sel, root) { return (root || document).querySelector(sel); }
@@ -230,9 +280,16 @@ function fuState(r, today) {
 /* ------------------------------------------------------------- storage */
 var records = [];
 var prefs = {};
+var syncCfg = {};
+var deviceId = '';
 function loadAll() {
   try { records = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); if (!Array.isArray(records)) records = []; }
   catch (e) { records = []; }
+  // v1 records have no revision counter: give them rev 1 so they are queued for sync once.
+  records.forEach(function (r) { if (!r.rev) r.rev = 1; });
+  try { syncCfg = JSON.parse(localStorage.getItem(SYNC_KEY) || '{}') || {}; } catch (e) { syncCfg = {}; }
+  deviceId = localStorage.getItem(DEVICE_KEY);
+  if (!deviceId) { deviceId = makeDeviceId(); try { localStorage.setItem(DEVICE_KEY, deviceId); } catch (e) { /* ignore */ } }
   try { prefs = JSON.parse(localStorage.getItem(PREF_KEY) || '{}') || {}; } catch (e) { prefs = {}; }
 }
 function saveAll() {
@@ -390,7 +447,8 @@ function buildRecord(d, existing) {
   var avgS = avg2(d.sbp1, d.sbp2), avgD = avg2(d.dbp1, d.dbp2), cat = classify(avgS, avgD);
   var bmi = calcBmi(d.heightCm, d.weightKg);
   var now = new Date().toISOString();
-  var r = existing ? existing : { id: uid(), createdAt: now, sample: false };
+  var r = existing ? existing : { id: uid(), createdAt: now, sample: false, deviceId: deviceId };
+  r.rev = existing ? (existing.rev || 1) + 1 : 1; // every change bumps rev -> queued for sync
   r.name = d.name; r.age = d.age; r.sex = d.sex; r.village = d.village;
   r.phone = d.phone ? normPhone(d.phone) : ''; r.consent = true;
   r.sbp1 = d.sbp1; r.dbp1 = d.dbp1; r.sbp2 = d.sbp2; r.dbp2 = d.dbp2; r.pulse = d.pulse;
@@ -427,6 +485,7 @@ function onSubmit(ev) {
   }
   if (!saveAll()) { if (!editingId) records.pop(); return; }
   prefs.screenedBy = d.screenedBy; savePrefs();
+  scheduleSync(300);
   lastResultId = r.id;
   editingId = null; $('#editBanner').hidden = true;
   form.hidden = true; $('#h-screen').hidden = true;
@@ -462,6 +521,7 @@ function renderResult(r) {
     '<dt>' + esc(t('waist')) + '</dt><dd>' + (r.waistCm != null ? fmtNum(r.waistCm) + ' cm' + (wh ? ' (' + esc(t('waistHigh')) + ')' : '') : esc(t('notRecorded'))) + '</dd>' +
     '<dt>' + esc(t('riskFactors')) + '</dt><dd>' + esc(rf.length ? rf.join(', ') : t('none')) + '</dd>' +
     '<dt>' + esc(t('followUpDue')) + '</dt><dd>' + esc(fuTxt) + '</dd>' +
+    '<dt>' + esc(t('syncLine')) + '</dt><dd id="resultSync">' + syncTag(r) + '</dd>' +
     '</dl></div>' +
     '<div class="btn-col"><button type="button" class="btn primary big" id="nextPerson">' + esc(t('nextPerson')) + '</button>' +
     (r.followUp && r.followUp.required ? '<button type="button" class="btn" id="gotoFu">' + esc(t('viewFollowup')) + '</button>' : '') + '</div>';
@@ -625,7 +685,7 @@ function renderRecords() {
     if (r.tobacco) rf.push(t('tobacco')); if (r.alcohol) rf.push(t('alcohol')); if (r.diabetes) rf.push(t('diabetes')); if (r.famHx) rf.push(t('famHx'));
     return '<div class="item b-' + r.category + '" data-id="' + r.id + '"><div class="item-head"><div>' +
       '<div class="item-name">' + esc(r.name) + (r.sample ? ' <span class="sample-tag">' + esc(t('sample')) + '</span>' : '') + '</div>' +
-      '<div class="item-meta">' + r.age + t('yrs') + ' · ' + esc(sexLabel(r.sex)) + ' · ' + esc(r.village) + ' · ' + fmtDate(r.screenDate) + '</div></div>' +
+      '<div class="item-meta">' + r.age + t('yrs') + ' · ' + esc(sexLabel(r.sex)) + ' · ' + esc(r.village) + ' · ' + fmtDate(r.screenDate) + '</div><div style="margin-top:4px">' + syncTag(r) + '</div></div>' +
       '<div style="text-align:right">' + badge(r.category) + '<div class="item-bp">' + fmtNum(r.avgSbp) + '/' + fmtNum(r.avgDbp) + '</div></div></div>' +
       '<details class="rec-details"><summary>' + esc(t('details')) + '</summary><dl class="kv" style="margin-top:8px">' +
       '<dt>' + esc(t('reading1')) + '</dt><dd>' + r.sbp1 + '/' + r.dbp1 + '</dd><dt>' + esc(t('reading2')) + '</dt><dd>' + r.sbp2 + '/' + r.dbp2 + '</dd>' +
@@ -738,6 +798,180 @@ function makeSampleRecords() {
   return out;
 }
 
+/* --------------------------------------------------------- Google Sheet sync
+ * Each record has rev (bumped on every change) and syncedRev (last rev the sheet confirmed).
+ * rev !== syncedRev  => record is queued. Nothing is ever deleted locally because of sync.
+ * Requests are POSTed as text/plain JSON (a "simple" CORS request, so no preflight —
+ * Google Apps Script cannot answer OPTIONS requests).                                   */
+var sync = { busy: false, status: 'idle', error: null, timer: null, backoff: 0, again: false, promise: null };
+function makeDeviceId() {
+  var a = new Uint8Array(6);
+  if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a); else for (var i = 0; i < 6; i++) a[i] = Math.floor(Math.random() * 256);
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = '';
+  for (var j = 0; j < 6; j++) s += chars[a[j] % chars.length];
+  return 'DEV-' + s + '-' + Date.now().toString(36).toUpperCase().slice(-4);
+}
+function touch(r) { r.rev = (r.rev || 1) + 1; r.updatedAt = new Date().toISOString(); }
+function saveSyncCfg() { try { localStorage.setItem(SYNC_KEY, JSON.stringify(syncCfg)); } catch (e) { /* ignore */ } }
+function isSyncConfigured() { return !!(syncCfg.url && syncCfg.key); }
+function isPending(r) { return !r.sample && (r.rev || 1) !== (r.syncedRev || 0); }
+function pendingRecords() { return records.filter(isPending); }
+function validSyncUrl(u) {
+  try { var x = new URL(u); if (x.protocol === 'https:') return true; return x.protocol === 'http:' && (x.hostname === 'localhost' || x.hostname === '127.0.0.1'); }
+  catch (e) { return false; }
+}
+function isAppsScriptUrl(u) { try { var h = new URL(u).hostname; return h === 'script.google.com' || h === 'script.googleusercontent.com'; } catch (e) { return false; } }
+function syncErr(code) { var e = new Error(code); e.code = code; return e; }
+function errText(code) { var k = 'syncErr_' + code; return I18N.en[k] ? t(k) : t('syncErr_other') + ' (' + code + ')'; }
+function httpJson(url, opts, timeoutMs) {
+  var ctrl = window.AbortController ? new AbortController() : null;
+  var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, timeoutMs || 30000) : null;
+  opts.redirect = 'follow'; opts.credentials = 'omit'; opts.cache = 'no-store';
+  if (ctrl) opts.signal = ctrl.signal;
+  return fetch(url, opts).then(function (res) { return res.text(); }, function () { throw syncErr('network'); })
+    .then(function (txt) { clearTimeout(timer); try { return JSON.parse(txt); } catch (e) { throw syncErr('bad'); } },
+      function (err) { clearTimeout(timer); throw err.code ? err : syncErr('network'); });
+}
+function postSync(url, payload) {
+  return httpJson(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) }, 45000);
+}
+function syncTag(r) {
+  var a = ' data-sync-id="' + esc(r.id) + '"';
+  if (r.sample) return '<span class="sync-tag st-sample"' + a + '>' + esc(t('syncTagSample')) + '</span>';
+  if (isPending(r)) return '<span class="sync-tag st-wait"' + a + '>⏳ ' + esc(t('syncTagPending')) + '</span>';
+  return '<span class="sync-tag st-ok"' + a + '>✓ ' + esc(t('syncTagSynced')) + '</span>';
+}
+/** Update sync badges in place (no full re-render, so half-typed forms are never wiped). */
+function refreshSyncTags() {
+  $all('[data-sync-id]').forEach(function (el) { var r = getRec(el.getAttribute('data-sync-id')); if (r) el.outerHTML = syncTag(r); });
+}
+function scheduleSync(delay) {
+  clearTimeout(sync.timer);
+  sync.timer = setTimeout(function () { syncNow(false); }, delay == null ? 800 : delay);
+  updateSyncUI();
+}
+function syncNow(manual) {
+  if (!isSyncConfigured()) { if (manual) toast(t('syncNotSetupToast')); updateSyncUI(); return Promise.resolve(false); }
+  if (sync.busy) { sync.again = true; return sync.promise; }
+  if (!pendingRecords().length) { sync.status = 'idle'; sync.error = null; updateSyncUI(); if (manual) toast(t('syncStAllSynced')); return Promise.resolve(true); }
+  if (navigator.onLine === false) { sync.status = 'offline'; updateSyncUI(); return Promise.resolve(false); }
+  clearTimeout(sync.timer);
+  sync.busy = true; sync.status = 'syncing'; updateSyncUI();
+  var total = 0, url = syncCfg.url, key = syncCfg.key;
+  function step() {
+    var batch = pendingRecords().slice(0, SYNC_BATCH);
+    if (!batch.length) return Promise.resolve();
+    var sent = batch.map(function (r) { return { id: r.id, rev: r.rev || 1 }; });
+    var today = todayStr();
+    return postSync(url, {
+      action: 'upsert', key: key, device_id: deviceId, app_version: APP_VERSION, sent_at: new Date().toISOString(),
+      records: batch.map(function (r) { return recordToRow(r, today); })
+    }).then(function (d) {
+      if (!d || d.ok !== true) throw syncErr((d && d.error) || 'bad');
+      var ok = {}; (d.synced || []).forEach(function (id) { ok[id] = 1; });
+      var now = new Date().toISOString(), n = 0;
+      sent.forEach(function (s) { var r = getRec(s.id); if (ok[s.id] && r) { r.syncedRev = s.rev; r.syncedAt = now; n++; } });
+      if (!n) throw syncErr('bad');
+      total += n; saveAll(); syncCfg.lastSyncAt = now; saveSyncCfg();
+      return step();
+    });
+  }
+  sync.promise = step().then(function () {
+    sync.status = 'idle'; sync.error = null; sync.backoff = 0;
+    if (manual) toast(t('syncSyncedN', { n: total }));
+    return true;
+  }, function (err) {
+    var code = err.code || 'network';
+    sync.status = (code === 'network' && navigator.onLine === false) ? 'offline' : 'error';
+    sync.error = code;
+    // Wrong/missing key will not fix itself: wait for a new save, settings change or "Sync now".
+    if (code !== 'unauthorized' && code !== 'key_not_set') { sync.backoff = Math.min((sync.backoff || 10000) * 2, 300000); scheduleSync(sync.backoff); }
+    if (manual) toast(t('syncStError', { e: errText(code), n: pendingRecords().length }));
+    return false;
+  }).then(function (res) {
+    sync.busy = false; updateSyncUI(); refreshSyncTags();
+    if (sync.again) { sync.again = false; scheduleSync(200); }
+    return res;
+  });
+  return sync.promise;
+}
+function updateSyncUI() {
+  var box = $('#syncStatus'); if (!box) return;
+  var n = pendingRecords().length, cls, txt;
+  if (!isSyncConfigured()) { cls = 'ss-off'; txt = t('syncStNotSetup'); }
+  else if (sync.status === 'syncing') { cls = 'ss-busy'; txt = t('syncStSyncing'); }
+  else if (navigator.onLine === false && n) { cls = 'ss-wait'; txt = t('syncStOffline', { n: n }); }
+  else if (sync.status === 'error' && n) { cls = 'ss-err'; txt = t('syncStError', { e: errText(sync.error), n: n }); }
+  else if (n) { cls = 'ss-wait'; txt = t('syncStPending', { n: n }); }
+  else { cls = 'ss-ok'; txt = '✓ ' + t('syncStAllSynced'); }
+  box.className = 'sync-status ' + cls;
+  box.setAttribute('data-pending', String(n));
+  var last = syncCfg.lastSyncAt ? '<div class="hint">' + esc(t('syncLast')) + ': ' + esc(new Date(syncCfg.lastSyncAt).toLocaleString()) + '</div>' : '';
+  box.innerHTML = '<div class="ss-main">' + esc(txt) + '</div>' + (isSyncConfigured() ? last : '');
+  var b = $('#syncBadge'); if (b) b.textContent = isSyncConfigured() && n ? String(n) : '';
+  var dv = $('#deviceIdOut'); if (dv) dv.textContent = deviceId;
+}
+function setSyncMsg(text, kind) { var m = $('#syncMsg'); m.textContent = text || ''; m.className = 'sync-msg ' + (kind || ''); }
+function fillSyncForm() { $('#syncUrl').value = syncCfg.url || ''; $('#syncKey').value = syncCfg.key || ''; }
+function readSyncForm() { return { url: $('#syncUrl').value.trim(), key: $('#syncKey').value.trim() }; }
+function checkSyncForm(v) {
+  if (!validSyncUrl(v.url)) { setSyncMsg(t('syncInvalidUrl'), 'bad'); return false; }
+  if (!v.key) { setSyncMsg(t('syncNeedKey'), 'bad'); return false; }
+  return true;
+}
+function saveSyncSettings() {
+  var v = readSyncForm();
+  if (!v.url && !v.key) { syncCfg = {}; saveSyncCfg(); setSyncMsg(t('syncDisabled'), 'ok'); updateSyncUI(); renderAll(); return; }
+  if (!checkSyncForm(v)) return;
+  syncCfg.url = v.url; syncCfg.key = v.key; saveSyncCfg();
+  sync.status = 'idle'; sync.error = null; sync.backoff = 0;
+  setSyncMsg(t('syncSaved'), 'ok'); toast(t('syncSaved'));
+  syncNow(false);
+}
+function testConnection() {
+  var v = readSyncForm();
+  if (!checkSyncForm(v)) return Promise.resolve(false);
+  setSyncMsg(t('syncTesting'), '');
+  var getUrl = v.url + (v.url.indexOf('?') >= 0 ? '&' : '?') + 'status=1&t=' + Date.now();
+  return httpJson(getUrl, { method: 'GET' }, 20000).then(function (d) {
+    if (!d || d.ok !== true || d.app !== 'htn-screening-sync') throw syncErr('bad');
+    return postSync(v.url, { action: 'ping', key: v.key, device_id: deviceId, app_version: APP_VERSION });
+  }).then(function (d) {
+    if (!d || d.ok !== true) throw syncErr((d && d.error) || 'bad');
+    setSyncMsg(t('syncTestOk'), 'ok'); return true;
+  }).catch(function (err) { setSyncMsg(t('syncTestFail', { e: errText(err.code || 'network') }), 'bad'); return false; });
+}
+function setupLink() {
+  var v = isSyncConfigured() ? { url: syncCfg.url, key: syncCfg.key } : readSyncForm();
+  if (!checkSyncForm(v)) return;
+  var base = location.protocol === 'file:' ? 'https://paulebe525.github.io/hypertension-screening/' : location.origin + location.pathname;
+  // '#' keeps the key out of web-server logs; '?sync=...&key=...' links are accepted too.
+  var link = base + '#sync=' + encodeURIComponent(v.url) + '&key=' + encodeURIComponent(v.key);
+  var out = $('#syncLinkOut'); out.hidden = false; out.value = link;
+  var done = function () { setSyncMsg(t('syncLinkCopied'), 'ok'); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(link).then(done, function () { out.select(); setSyncMsg(t('syncLinkReady'), ''); });
+  else { out.select(); setSyncMsg(t('syncLinkReady'), ''); }
+}
+/** Read ?sync=URL&key=KEY (or #sync=...&key=...) from a shared setup link. */
+function applySetupLink() {
+  var url = null, key = null;
+  [location.search.slice(1), location.hash.slice(1)].forEach(function (q) {
+    if (!q || q.indexOf('sync=') < 0 && q.indexOf('key=') < 0) return;
+    var p = new URLSearchParams(q); if (p.get('sync')) url = p.get('sync'); if (p.get('key')) key = p.get('key');
+  });
+  if (url == null && key == null) return false;
+  // Remove the key from the address bar / history straight away, whatever happens next.
+  try { history.replaceState(null, '', location.pathname); } catch (e) { /* ignore */ }
+  if (!url || !key || !validSyncUrl(url)) { toast(t('syncInvalidUrl')); return false; }
+  if (syncCfg.url === url && syncCfg.key === key) { toast(t('syncSaved')); return true; }
+  var msg = t('syncSetupConfirm', { u: url }) + (isAppsScriptUrl(url) ? '' : '\n\n' + t('syncNotGoogle'));
+  if (!confirm(msg)) return false;
+  syncCfg.url = url; syncCfg.key = key; saveSyncCfg();
+  sync.status = 'idle'; sync.error = null;
+  fillSyncForm(); toast(t('syncSaved')); setSyncMsg(t('syncSaved'), 'ok');
+  return true;
+}
+
 /* ------------------------------------------------------------- render */
 function updateBadge() {
   var today = todayStr();
@@ -751,7 +985,7 @@ function refreshVillageList() {
   $('#villageList').innerHTML = opts.map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
 }
 function renderAll() {
-  updateBadge();
+  updateBadge(); updateSyncUI();
   if (currentView === 'followup') renderFollowup();
   if (currentView === 'dashboard') renderDashboard();
   if (currentView === 'records') renderRecords();
@@ -792,14 +1026,14 @@ function init() {
     var act = btn.getAttribute('data-act');
     if (act === 'recheck') { openRecheck = r.id; renderFollowup(); var f = $('.recheck-form[data-id="' + r.id + '"] input[name=rsbp]'); if (f) f.focus(); return; }
     if (act === 'cancel-recheck') { openRecheck = null; renderFollowup(); return; }
-    if (act === 'done') { r.followUp.status = 'done'; r.followUp.doneDate = todayStr(); r.updatedAt = new Date().toISOString(); saveAll(); toast(t('fuMarkedDone')); }
-    if (act === 'reopen') { r.followUp.status = 'pending'; r.followUp.doneDate = null; r.updatedAt = new Date().toISOString(); saveAll(); toast(t('fuReopened')); }
+    if (act === 'done') { r.followUp.status = 'done'; r.followUp.doneDate = todayStr(); touch(r); saveAll(); scheduleSync(); toast(t('fuMarkedDone')); }
+    if (act === 'reopen') { r.followUp.status = 'pending'; r.followUp.doneDate = null; touch(r); saveAll(); scheduleSync(); toast(t('fuReopened')); }
     renderAll();
   });
   $('#fuList').addEventListener('change', function (e) {
     if (!e.target.classList.contains('due-input')) return;
     var r = getRec(e.target.closest('.item').getAttribute('data-id'));
-    if (r && isValidDateStr(e.target.value)) { r.followUp.dueDate = e.target.value; r.updatedAt = new Date().toISOString(); saveAll(); toast(t('dueUpdated')); renderAll(); }
+    if (r && isValidDateStr(e.target.value)) { r.followUp.dueDate = e.target.value; touch(r); saveAll(); scheduleSync(); toast(t('dueUpdated')); renderAll(); }
     else if (r) e.target.value = r.followUp.dueDate || '';
   });
   $('#fuList').addEventListener('submit', function (e) {
@@ -812,8 +1046,8 @@ function init() {
     r.followUp.rechecks = r.followUp.rechecks || [];
     r.followUp.rechecks.push({ date: d.date, sbp: d.sbp, dbp: d.dbp, pulse: d.pulse, category: classify(d.sbp, d.dbp), at: new Date().toISOString() });
     r.followUp.rechecks.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
-    r.updatedAt = new Date().toISOString();
-    saveAll(); openRecheck = null; toast(t('recheckSaved')); renderAll();
+    touch(r);
+    saveAll(); scheduleSync(); openRecheck = null; toast(t('recheckSaved')); renderAll();
   });
 
   $('#dashIncludeSample').addEventListener('change', renderDashboard);
@@ -848,16 +1082,37 @@ function init() {
     records = []; saveAll(); toast(t('cleared')); renderAll(); refreshVillageList();
   });
 
+  // ---- Google Sheet sync wiring
+  fillSyncForm();
+  $('#syncSaveBtn').addEventListener('click', saveSyncSettings);
+  $('#syncTestBtn').addEventListener('click', testConnection);
+  $('#syncNowBtn').addEventListener('click', function () { sync.backoff = 0; syncNow(true); });
+  $('#syncLinkBtn').addEventListener('click', setupLink);
+  $('#syncShowKey').addEventListener('click', function () {
+    var k = $('#syncKey'); var show = k.type === 'password'; k.type = show ? 'text' : 'password';
+    this.setAttribute('data-i18n', show ? 'hideKey' : 'showKey'); this.textContent = t(show ? 'hideKey' : 'showKey');
+  });
+  window.addEventListener('online', function () { sync.backoff = 0; updateSyncUI(); syncNow(false); });
+  window.addEventListener('offline', function () { updateSyncUI(); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') syncNow(false); });
+  window.addEventListener('hashchange', function () { if (applySetupLink()) { showView('records'); syncNow(false); } });
+  setInterval(function () { if (!sync.busy && sync.status !== 'error' && pendingRecords().length) syncNow(false); }, 60000);
+  var fromLink = applySetupLink();
+  if (!isSyncConfigured()) $('#syncSettings').open = true;
+
   // Ask the browser not to evict our data (best effort).
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignore */ }
 
   refreshVillageList();
   applyLang();
+  if (fromLink) showView('records');
+  syncNow(false); // retry anything queued from earlier sessions
 }
 
 // Expose pure functions for automated testing.
 window.HTN = { classify: classify, avg2: avg2, calcBmi: calcBmi, bmiCategory: bmiCategory, defaultDueDate: defaultDueDate,
-  ageGroup: ageGroup, validate: validate, buildCsv: buildCsv, normPhone: normPhone, CSV_COLS: CSV_COLS };
+  ageGroup: ageGroup, validate: validate, buildCsv: buildCsv, normPhone: normPhone, CSV_COLS: CSV_COLS,
+  syncNow: syncNow, pendingCount: function () { return pendingRecords().length; }, deviceId: function () { return deviceId; } };
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

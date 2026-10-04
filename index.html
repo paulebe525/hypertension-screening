@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b5f8a">
 <meta name="description" content="Offline hypertension (BP) screening tool for community screening camps">
 <title>BP Screening – Scudder College of Nursing</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=1.1">
 </head>
 <body>
 <header class="topbar">
@@ -186,6 +186,37 @@
 <!-- ============ RECORDS & DATA ============ -->
 <section id="view-records" class="view" aria-labelledby="h-rec">
   <h2 id="h-rec" data-i18n="recHeading">Records &amp; data</h2>
+  <div class="card" id="syncCard">
+    <h3 data-i18n="syncTitle">Google Sheet sync</h3>
+    <div id="syncStatus" class="sync-status" aria-live="polite"></div>
+    <div class="btn-col" style="margin-top:10px">
+      <button type="button" class="btn primary" id="syncNowBtn" data-i18n="syncNow">Sync now</button>
+    </div>
+    <details id="syncSettings" class="sync-settings">
+      <summary data-i18n="syncSettings">Sync settings</summary>
+      <div class="field" style="margin-top:10px">
+        <label class="lbl" for="syncUrl" data-i18n="syncUrl">Web App URL</label>
+        <input id="syncUrl" type="text" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec">
+      </div>
+      <div class="field">
+        <label class="lbl" for="syncKey" data-i18n="syncKey">Secret key</label>
+        <div class="key-row">
+          <input id="syncKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <button type="button" class="btn small" id="syncShowKey" data-i18n="showKey">Show</button>
+        </div>
+      </div>
+      <div id="syncMsg" class="sync-msg" role="status" aria-live="polite"></div>
+      <div class="btn-col">
+        <button type="button" class="btn primary" id="syncSaveBtn" data-i18n="syncSave">Save settings</button>
+        <button type="button" class="btn" id="syncTestBtn" data-i18n="syncTest">Test connection</button>
+        <button type="button" class="btn" id="syncLinkBtn" data-i18n="syncCopyLink">Copy setup link</button>
+      </div>
+      <textarea id="syncLinkOut" readonly hidden style="margin-top:10px;font-size:.85rem"></textarea>
+      <p class="hint" data-i18n="syncLinkWarn">The setup link contains the secret key — share it only with your screening team.</p>
+      <p class="hint"><span data-i18n="deviceId">Device ID</span>: <strong id="deviceIdOut"></strong></p>
+      <p class="hint" data-i18n="syncSampleNote">Sample records are never sent to the sheet.</p>
+    </details>
+  </div>
   <div class="card">
     <h3 data-i18n="dataTools">Data tools</h3>
     <div class="btn-col">
@@ -195,7 +226,7 @@
       <button type="button" class="btn danger" id="clearAll" data-i18n="clearAll">Clear all data</button>
     </div>
     <p class="hint" id="storageInfo"></p>
-    <p class="hint" data-i18n="storageWarn">Data is stored only on this device/browser. Export CSV regularly as a backup.</p>
+    <p class="hint" data-i18n="storageWarn">Data is always saved on this phone first. If Google Sheet sync is set up, a copy is also sent to the sheet. Export CSV regularly as a backup.</p>
   </div>
   <div class="field">
     <label class="lbl" for="recSearch" data-i18n="search">Search name or village</label>
@@ -203,7 +234,7 @@
   </div>
   <div id="recList"></div>
 </section>
-<p class="foot-note">HTN Screening v1 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
+<p class="foot-note">HTN Screening v1.1 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
 </main>
 
 <nav class="tabbar" aria-label="Main">
@@ -218,10 +249,10 @@
     <span data-i18n="tabDashboard">Dashboard</span></button>
   <button type="button" data-view="records">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
-    <span data-i18n="tabRecords">Records</span></button>
+    <span data-i18n="tabRecords">Records</span><span class="tab-badge pend" id="syncBadge"></span></button>
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:16px">Please enable JavaScript to use this app.</p></noscript>
-<script src="app.js"></script>
+<script src="app.js?v=1.1"></script>
 </body>
 </html>

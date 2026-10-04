@@ -1,4 +1,4 @@
-Hypertension Screening – Version 1
+Hypertension Screening – Version 1.1 (adds Google Sheet sync)
 Scudder College of Nursing, Ranipet (Digital Health)
 
 HOW TO OPEN
@@ -38,3 +38,17 @@ DATA
   Stored in browser localStorage on the device (key: htnScreening.v1.records).
   Clearing browser data / uninstalling the browser deletes it – export CSV regularly.
   CSV is UTF-8 with BOM (Tamil text opens correctly in Excel).
+
+GOOGLE SHEET SYNC (v1.1)
+  All phones can send their records to one Google Sheet owned by the project lead.
+  Setup: see SETUP-GOOGLE-SHEET.txt and apps-script/Code.gs (paste into the sheet's
+  Extensions > Apps Script; set your own KEY; deploy as a Web app).
+  On each phone: Records tab > Sync settings > Web App URL + secret key > Save >
+  Test connection. Or open a setup link (Copy setup link) which fills them in.
+  - Every save, edit and follow-up change is queued and sent automatically when online;
+    queued records are retried on app start, when the internet returns, every minute,
+    and with the "Sync now" button. Local data is never removed by sync.
+  - Rows in the sheet are updated by record_id, so edits never create duplicates.
+  - Columns = the CSV columns + synced_at + device_id (a random ID made once per phone).
+  - Sample records are never sent. Deleting a record on a phone does NOT delete it
+    from the sheet (delete the row in the sheet if needed).

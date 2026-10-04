@@ -30,7 +30,7 @@ legend{font-weight:700;font-size:1.1rem;color:var(--brand-dark);padding:0 6px}
 .field>.lbl{display:block;font-weight:600;margin-bottom:4px}
 .req{color:var(--urgent);font-weight:700}
 .hint{font-size:.85rem;color:var(--muted)}
-input[type=text],input[type=number],input[type=tel],input[type=date],input[type=search],textarea,select{
+input[type=text],input[type=number],input[type=tel],input[type=date],input[type=search],input[type=password],input[type=url],textarea,select{
   width:100%;font-size:1.15rem;padding:10px 12px;min-height:52px;border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--text);font-family:inherit}
 textarea{min-height:70px}
 input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid var(--focus);outline-offset:1px;border-color:var(--brand)}
@@ -139,3 +139,22 @@ details.rec-details summary{cursor:pointer;color:var(--brand);font-weight:700;ma
 .age-field input{max-width:180px}
 .tabbar button span{overflow-wrap:anywhere}
 html[lang=ta] .tabbar button{font-size:.72rem}
+/* Google Sheet sync */
+.sync-status{border-radius:10px;padding:12px;font-weight:700;border-left:8px solid #9aa9b6;background:#eef2f5}
+.sync-status .hint{font-weight:400;margin-top:4px}
+.sync-status.ss-ok{background:var(--normal-bg);border-left-color:var(--normal);color:var(--normal)}
+.sync-status.ss-wait{background:var(--elevated-bg);border-left-color:var(--elevated-fill);color:var(--elevated)}
+.sync-status.ss-busy{background:#e3f2fd;border-left-color:var(--brand);color:var(--brand-dark)}
+.sync-status.ss-err{background:var(--urgent-bg);border-left-color:var(--urgent);color:var(--urgent)}
+.sync-status.ss-off{color:var(--muted)}
+.sync-settings{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}
+.sync-settings summary{cursor:pointer;font-weight:700;color:var(--brand);min-height:44px;display:flex;align-items:center}
+.key-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.sync-msg{font-weight:700;margin:4px 0 10px;font-size:.95rem}
+.sync-msg:empty{display:none}
+.sync-msg.ok{color:var(--normal)} .sync-msg.bad{color:var(--urgent)}
+.sync-tag{display:inline-block;font-size:.78rem;font-weight:700;border-radius:6px;padding:1px 7px}
+.sync-tag.st-ok{background:var(--normal-bg);color:var(--normal)}
+.sync-tag.st-wait{background:var(--elevated-bg);color:var(--elevated)}
+.sync-tag.st-sample{background:#ede7f6;color:#4527a0}
+.tab-badge.pend{background:var(--elevated-fill);color:#3d2a00}
