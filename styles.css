@@ -167,3 +167,12 @@ html[lang=ta] .tabbar button{font-size:.72rem}
 select{appearance:auto}
 .village-hint{color:var(--urgent);font-weight:600;margin-top:6px}
 #localVillagesInput{min-height:140px;font-size:1rem}
+/* v1.3 PWA: offline bar, update banner, install card */
+.offline-bar{position:relative;z-index:9;display:flex;align-items:center;justify-content:center;gap:8px;background:#37474f;color:#fff;font-weight:700;font-size:.9rem;padding:6px 12px;text-align:center}
+.offline-bar .dot{width:10px;height:10px;border-radius:50%;background:#ffb300;flex:0 0 10px}
+.update-banner{position:fixed;left:12px;right:12px;bottom:80px;z-index:40;background:var(--brand-dark);color:#fff;border:2px solid #fff;border-radius:12px;padding:14px;font-size:1rem;font-weight:700;font-family:inherit;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer;max-width:696px;margin:0 auto}
+.install-card{display:flex;gap:12px;align-items:flex-start;background:#eef6fb;border-color:#b9d7ea}
+.install-card img{border-radius:12px;flex:0 0 56px}
+.install-body{flex:1;min-width:0}
+.ios-hint{font-weight:700;color:var(--brand-dark);margin-top:4px}
+@media (display-mode: standalone){ .install-card{display:none!important} }

@@ -8,7 +8,7 @@ var STORE_KEY = 'htnScreening.v1.records';
 var PREF_KEY = 'htnScreening.v1.prefs';
 var SYNC_KEY = 'htnScreening.v1.sync';        // {url, key, lastSyncAt}
 var DEVICE_KEY = 'htnScreening.v1.deviceId';  // generated once per phone/browser
-var APP_VERSION = '1.2.1';
+var APP_VERSION = '1.3';
 // Built-in village list (exact spellings from the project lead). Used until the sheet's Villages tab
 // or a local fallback list provides one. Precedence: sheet (non-empty) > local list > these defaults.
 var DEFAULT_VILLAGES = ['Gudimallur', 'Avarakarai', 'Maniyampattu'];
@@ -220,6 +220,18 @@ SYNC_I18N.ta = Object.assign(SYNC_I18N.ta, {
   vNeedSync: 'அதிகாரப்பூர்வக் கிராமப் பட்டியலைப் பெற Google Sheet ஒத்திசைவை அமைக்கவும்.',
   localListTitle: 'உள்ளூர்க் கிராமப் பட்டியல் (மாற்று வழி)', localListHint: 'Google Sheet-இலிருந்து பட்டியல் கிடைக்காதபோது மட்டும் பயன்படும். ஒரு வரிக்கு ஒரு கிராமப் பெயர்.',
   saveLocalList: 'உள்ளூர்ப் பட்டியலைச் சேமி', localNotInUse: 'இப்போது பயன்பாட்டில் இல்லை — Google Sheet பட்டியல் பயன்படுத்தப்படுகிறது.', localSaved: 'உள்ளூர்க் கிராமப் பட்டியல் சேமிக்கப்பட்டது ({n})', screenedByIf: 'பரிசோதித்தவர் (வேறு நபர் என்றால்)'
+});
+SYNC_I18N.en = Object.assign(SYNC_I18N.en, {
+  installApp: 'Install app', installTitle: 'Install BP Screening on this phone', installText: 'Opens from the home screen and works without internet.',
+  iosHint: 'iPhone: tap Share → Add to Home Screen', notNow: 'Not now', installed: 'App installed',
+  updateAvailable: 'New version available – tap to update', updateConfirm: 'The form you are filling will be cleared. Update now?',
+  offlineBar: 'Offline – records are saved on this phone'
+});
+SYNC_I18N.ta = Object.assign(SYNC_I18N.ta, {
+  installApp: 'செயலியை நிறுவு', installTitle: 'BP Screening-ஐ இந்தக் கைபேசியில் நிறுவவும்', installText: 'முகப்புத் திரையிலிருந்து திறக்கலாம்; இணையம் இல்லாமலும் வேலை செய்யும்.',
+  iosHint: 'iPhone: Share (பகிர்) → Add to Home Screen என்பதைத் தட்டவும்', notNow: 'இப்போது வேண்டாம்', installed: 'செயலி நிறுவப்பட்டது',
+  updateAvailable: 'புதிய பதிப்பு கிடைக்கிறது – புதுப்பிக்கத் தட்டவும்', updateConfirm: 'நீங்கள் நிரப்பும் படிவம் அழிக்கப்படும். இப்போதே புதுப்பிக்கவா?',
+  offlineBar: 'இணையம் இல்லை – பதிவுகள் இந்தக் கைபேசியில் சேமிக்கப்படும்'
 });
 Object.keys(SYNC_I18N).forEach(function (l) { Object.keys(SYNC_I18N[l]).forEach(function (k) { I18N[l][k] = SYNC_I18N[l][k]; }); });
 
@@ -1136,6 +1148,59 @@ function renderAll() {
   if (currentView === 'records') renderRecords();
 }
 
+/* ------------------------------------------------------- PWA: install, offline, updates */
+var deferredPrompt = null, waitingWorker = null, updateRequested = false;
+function isStandalone() { return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; }
+function isIOS() { var ua = navigator.userAgent || ''; return /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+function renderInstallUI() {
+  if (!$('#installCard')) return;
+  var standalone = isStandalone(), canPrompt = !!deferredPrompt && !standalone, ios = isIOS() && !standalone;
+  var dismissed = prefs.installDismissedAt && (Date.now() - prefs.installDismissedAt < 14 * 864e5);
+  $('#installCard').hidden = !(canPrompt || ios) || !!dismissed;
+  $('#installBtn').hidden = !canPrompt; $('#installBtn2').hidden = !canPrompt;
+  $('#iosHint').hidden = !ios; $('#iosHint2').hidden = !ios;
+}
+function doInstall() {
+  if (!deferredPrompt) return;
+  var ev = deferredPrompt;
+  ev.prompt();
+  Promise.resolve(ev.userChoice).then(function () { deferredPrompt = null; renderInstallUI(); }, function () { deferredPrompt = null; renderInstallUI(); });
+}
+// Registered at load time so the event is never missed.
+window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; renderInstallUI(); });
+window.addEventListener('appinstalled', function () { deferredPrompt = null; renderInstallUI(); toast(t('installed')); });
+function renderOffline() { var b = $('#offlineBar'); if (b) b.hidden = navigator.onLine !== false; }
+function formIsDirty() {
+  if (!form || form.hidden) return false;
+  var f = form.elements;
+  return ['name', 'age', 'sbp1', 'dbp1', 'sbp2', 'dbp2', 'pulse'].some(function (k) { return f[k] && String(f[k].value).trim() !== ''; });
+}
+function showUpdateBanner(worker) { waitingWorker = worker; $('#updateBanner').hidden = false; }
+function applyUpdate() {
+  if (!waitingWorker) { location.reload(); return; }
+  if (formIsDirty() && !confirm(t('updateConfirm'))) return;
+  updateRequested = true;
+  waitingWorker.postMessage({ type: 'SKIP_WAITING' });   // new worker activates -> controllerchange -> reload
+  setTimeout(function () { if (updateRequested) location.reload(); }, 4000); // safety net
+}
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (updateRequested) { updateRequested = false; location.reload(); }
+  });
+  navigator.serviceWorker.register('sw.js', { scope: './' }).then(function (reg) {
+    if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner(reg.waiting);
+    reg.addEventListener('updatefound', function () {
+      var nw = reg.installing; if (!nw) return;
+      nw.addEventListener('statechange', function () {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdateBanner(nw);
+      });
+    });
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') reg.update().catch(function () {}); });
+    setInterval(function () { reg.update().catch(function () {}); }, 3600 * 1000);
+  }).catch(function () { /* app still works without offline support */ });
+}
+
 /* ---------------------------------------------------------------- init */
 function init() {
   loadAll();
@@ -1261,6 +1326,17 @@ function init() {
   if (fromLink) showView('records');
   syncNow(false); // retry anything queued from earlier sessions
   refreshVillages(false);
+
+  // ---- PWA
+  $('#installBtn').addEventListener('click', doInstall);
+  $('#installBtn2').addEventListener('click', doInstall);
+  $('#installDismiss').addEventListener('click', function () { prefs.installDismissedAt = Date.now(); savePrefs(); renderInstallUI(); });
+  $('#updateBanner').addEventListener('click', applyUpdate);
+  window.addEventListener('online', renderOffline);
+  window.addEventListener('offline', renderOffline);
+  if (window.matchMedia) { try { window.matchMedia('(display-mode: standalone)').addEventListener('change', renderInstallUI); } catch (e) { /* old browsers */ } }
+  renderOffline(); renderInstallUI();
+  registerServiceWorker();
 }
 
 // Expose pure functions for automated testing.

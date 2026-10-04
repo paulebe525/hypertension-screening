@@ -1,14 +1,19 @@
-Hypertension Screening – Version 1.2.1 (Google Sheet sync, Entered by, village list)
+Hypertension Screening – Version 1.3 (installable app + offline, Google Sheet sync, Entered by, village list)
 Scudder College of Nursing, Ranipet (Digital Health)
 
 HOW TO OPEN
-  Open index.html in any modern browser (Chrome, Edge, Firefox, Safari) – no internet,
-  no installation, no server needed. Keep index.html, app.js and styles.css together
-  in the same folder.
+  Live link: https://paulebe525.github.io/hypertension-screening/
+  Best: open the link once and INSTALL it as an app (see INSTALL AS AN APP below) – it
+  then opens from the home screen and works fully offline.
+  Also works by opening index.html directly from a folder (keep all files together);
+  offline install/update features need the web link (https).
+  Each phone/browser keeps its OWN data.
 
-  To use on many phones, it is easiest to host the folder on any static web host
-  (e.g. GitHub Pages / college intranet) and open the link once; it then works offline
-  as long as the page stays open/cached. Each phone/browser keeps its OWN data.
+INSTALL AS AN APP (v1.3)
+  Android (Chrome): open the link > tap "Install app" at the top of the Screen tab
+    (or Records > data tools, or Chrome menu ⋮ > Install app / Add to Home screen).
+  iPhone (Safari): open the link > tap Share (square with arrow) > Add to Home Screen > Add.
+  The icon "BP Screening" appears on the home screen and opens full-screen.
 
 TABS
   Screen     – "Entered by" (your name, asked once per phone, required) at the top; register
@@ -69,3 +74,21 @@ ENTERED BY + VILLAGE LIST (v1.2)
     A newly created Villages tab starts with the same three names.
   - Old records with a free-text village keep it; when edited it is shown as
     "<name> (not in list)" and can be kept or changed to a listed village.
+
+INSTALLABLE APP + OFFLINE MODE (v1.3, Progressive Web App)
+  - manifest.json: name "BP Screening – Scudder", short name "BP Screening", opens
+    full-screen (standalone, portrait), colours = app header (#0b5f8a). Icons in icons/
+    (192, 512, maskable 512, apple-touch-icon 180, favicons).
+  - sw.js (service worker): all app files are stored on the phone in a versioned cache
+    (htn-shell-<version>) and served from there first, so the app opens with no internet,
+    even after a reload or phone restart. Google Apps Script requests (sync, villages) are
+    never cached – they always go to the network; the existing sync queue keeps records
+    waiting until the phone is online.
+  - A grey "Offline – records are saved on this phone" bar shows when there is no internet.
+  - Install button (Android Chrome) / "Tap Share → Add to Home Screen" hint (iPhone Safari),
+    English + Tamil; hidden once the app is installed; "Not now" hides it for 14 days.
+  - Updates: when a new version is published, the app shows "New version available – tap
+    to update" (EN + Tamil). Tapping it switches to the new version and reloads (asks
+    first if a form is half-filled). Old caches are deleted. Records are never affected.
+  - Publishing a new version: change VERSION in sw.js (and the ?v= numbers in index.html
+    and the SHELL list in sw.js if app.js/styles.css changed).

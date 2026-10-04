@@ -4,9 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0b5f8a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BP Screening">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="application-name" content="BP Screening">
 <meta name="description" content="Offline hypertension (BP) screening tool for community screening camps">
 <title>BP Screening – Scudder College of Nursing</title>
-<link rel="stylesheet" href="styles.css?v=1.2.1">
+<link rel="stylesheet" href="styles.css?v=1.3">
 </head>
 <body>
 <header class="topbar">
@@ -16,10 +25,24 @@
   </div>
   <button id="langToggle" class="lang-btn" type="button" lang="ta" aria-label="Switch language / மொழி மாற்று">தமிழ்</button>
 </header>
+<div id="offlineBar" class="offline-bar" role="status" hidden><span class="dot"></span><span data-i18n="offlineBar">Offline – records are saved on this phone</span></div>
+<button type="button" id="updateBanner" class="update-banner" hidden data-i18n="updateAvailable">New version available – tap to update</button>
 
 <main>
 <!-- ============ SCREEN (register + readings) ============ -->
 <section id="view-screen" class="view active" aria-labelledby="h-screen">
+  <div id="installCard" class="card install-card" hidden>
+    <img src="icons/icon-192.png" alt="" width="56" height="56">
+    <div class="install-body">
+      <strong data-i18n="installTitle">Install BP Screening on this phone</strong>
+      <div class="hint" data-i18n="installText">Opens from the home screen and works without internet.</div>
+      <div class="hint ios-hint" id="iosHint" hidden data-i18n="iosHint">iPhone: tap Share → Add to Home Screen</div>
+      <div class="btn-row" style="margin-top:8px">
+        <button type="button" class="btn primary small" id="installBtn" hidden data-i18n="installApp">Install app</button>
+        <button type="button" class="btn small" id="installDismiss" data-i18n="notNow">Not now</button>
+      </div>
+    </div>
+  </div>
   <h2 id="h-screen" data-i18n="screenHeading">New screening</h2>
   <div id="editBanner" class="card" hidden style="background:#fff8e1;border-color:#f9a825">
     <strong data-i18n="editingRecord">Editing an existing record</strong>
@@ -251,6 +274,8 @@
   <div class="card">
     <h3 data-i18n="dataTools">Data tools</h3>
     <div class="btn-col">
+      <button type="button" class="btn primary" id="installBtn2" hidden data-i18n="installApp">Install app</button>
+      <p class="hint ios-hint" id="iosHint2" hidden data-i18n="iosHint">iPhone: tap Share → Add to Home Screen</p>
       <button type="button" class="btn primary" id="exportCsv" data-i18n="exportCsv">Export CSV (all records)</button>
       <button type="button" class="btn" id="loadSample" data-i18n="loadSample">Load sample data</button>
       <button type="button" class="btn" id="removeSample" data-i18n="removeSample">Remove sample data</button>
@@ -265,7 +290,7 @@
   </div>
   <div id="recList"></div>
 </section>
-<p class="foot-note">HTN Screening v1.2.1 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
+<p class="foot-note">HTN Screening v1.3 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
 </main>
 
 <nav class="tabbar" aria-label="Main">
@@ -284,6 +309,6 @@
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:16px">Please enable JavaScript to use this app.</p></noscript>
-<script src="app.js?v=1.2.1"></script>
+<script src="app.js?v=1.3"></script>
 </body>
 </html>
