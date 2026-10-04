@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b5f8a">
 <meta name="description" content="Offline hypertension (BP) screening tool for community screening camps">
 <title>BP Screening – Scudder College of Nursing</title>
-<link rel="stylesheet" href="styles.css?v=1.1">
+<link rel="stylesheet" href="styles.css?v=1.2">
 </head>
 <body>
 <header class="topbar">
@@ -23,10 +23,26 @@
   <h2 id="h-screen" data-i18n="screenHeading">New screening</h2>
   <div id="editBanner" class="card" hidden style="background:#fff8e1;border-color:#f9a825">
     <strong data-i18n="editingRecord">Editing an existing record</strong>
+    <div class="hint" id="editInfo"></div>
     <div class="btn-row" style="margin-top:8px"><button type="button" class="btn small" id="cancelEdit" data-i18n="cancelEdit">Cancel edit</button></div>
   </div>
   <form id="screenForm" novalidate autocomplete="off">
     <div id="formErrors" class="error-summary" role="alert" hidden></div>
+
+    <div class="card entered-by" id="enteredByCard">
+      <div id="ebView" class="eb-view">
+        <span><span class="eb-lbl" data-i18n="enteredBy">Entered by</span>: <strong id="ebName"></strong></span>
+        <button type="button" class="btn small" id="ebChange" data-i18n="change">Change</button>
+      </div>
+      <div id="ebEdit" class="field" data-f="enteredBy" hidden>
+        <label class="lbl" for="ebInput"><span data-i18n="enteredByPrompt">Your name (person entering records on this phone)</span> <span class="req">*</span></label>
+        <div class="key-row">
+          <input id="ebInput" type="text" maxlength="60" autocomplete="name">
+          <button type="button" class="btn primary small" id="ebSave" data-i18n="saveName">Save name</button>
+        </div>
+        <div class="err"></div>
+      </div>
+    </div>
 
     <fieldset class="card">
       <legend data-i18n="secPerson">1. Person details</legend>
@@ -51,8 +67,8 @@
         </div>
       <div class="field" data-f="village">
         <label class="lbl" for="f-village"><span data-i18n="village">Village / Area</span> <span class="req">*</span></label>
-        <input id="f-village" name="village" type="text" maxlength="60" list="villageList">
-        <datalist id="villageList"></datalist>
+        <select id="f-village" name="village"></select>
+        <div id="villageHint" class="hint village-hint" hidden></div>
         <div class="err"></div>
       </div>
       <div class="field" data-f="phone">
@@ -146,7 +162,7 @@
           <div class="err"></div>
         </div>
         <div class="field" data-f="screenedBy">
-          <label class="lbl" for="f-by"><span data-i18n="screenedBy">Screened by</span></label>
+          <label class="lbl" for="f-by"><span data-i18n="screenedByIf">Screened by (if a different person)</span></label>
           <input id="f-by" name="screenedBy" type="text" maxlength="60">
           <div class="err"></div>
         </div>
@@ -217,6 +233,20 @@
       <p class="hint" data-i18n="syncSampleNote">Sample records are never sent to the sheet.</p>
     </details>
   </div>
+  <div class="card" id="villageCard">
+    <h3 data-i18n="villageListTitle">Village list</h3>
+    <div id="villageStatus" class="sync-status" aria-live="polite"></div>
+    <div class="btn-col" style="margin-top:10px">
+      <button type="button" class="btn" id="refreshVillagesBtn" data-i18n="refreshVillages">Refresh villages</button>
+    </div>
+    <details id="localVillagesBox" class="sync-settings">
+      <summary data-i18n="localListTitle">Local village list (fallback)</summary>
+      <p class="hint" data-i18n="localListHint">Used only when no list is available from the Google Sheet. One village name per line.</p>
+      <p class="hint" id="localNotInUse" style="font-weight:700;color:var(--elevated)" hidden></p>
+      <textarea id="localVillagesInput" rows="6" spellcheck="false" aria-label="Local village list"></textarea>
+      <div class="btn-col" style="margin-top:8px"><button type="button" class="btn primary" id="saveLocalVillagesBtn" data-i18n="saveLocalList">Save local list</button></div>
+    </details>
+  </div>
   <div class="card">
     <h3 data-i18n="dataTools">Data tools</h3>
     <div class="btn-col">
@@ -234,7 +264,7 @@
   </div>
   <div id="recList"></div>
 </section>
-<p class="foot-note">HTN Screening v1.1 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
+<p class="foot-note">HTN Screening v1.2 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
 </main>
 
 <nav class="tabbar" aria-label="Main">
@@ -253,6 +283,6 @@
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:16px">Please enable JavaScript to use this app.</p></noscript>
-<script src="app.js?v=1.1"></script>
+<script src="app.js?v=1.2"></script>
 </body>
 </html>

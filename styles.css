@@ -158,3 +158,12 @@ html[lang=ta] .tabbar button{font-size:.72rem}
 .sync-tag.st-wait{background:var(--elevated-bg);color:var(--elevated)}
 .sync-tag.st-sample{background:#ede7f6;color:#4527a0}
 .tab-badge.pend{background:var(--elevated-fill);color:#3d2a00}
+/* v1.2: Entered by + village select */
+.entered-by{background:#eef6fb;border-color:#b9d7ea}
+.eb-view{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:1.05rem}
+.eb-lbl{color:var(--muted)}
+.entered-by .field{margin:0}
+.entered-by.invalid,.field.invalid select{border-color:var(--urgent)}
+select{appearance:auto}
+.village-hint{color:var(--urgent);font-weight:600;margin-top:6px}
+#localVillagesInput{min-height:140px;font-size:1rem}

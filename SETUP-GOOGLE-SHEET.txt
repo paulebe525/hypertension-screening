@@ -34,34 +34,59 @@ B. PUBLISH IT AS A WEB APP
     "Go to ... (unsafe)" > Allow. (This is normal for your own script.)
 11. Copy the Web app URL shown (it starts with https://script.google.com/macros/s/
     and ends with /exec). Click Done.
-12. Optional check: paste that URL into a browser. You should see a short text
+12. Check: paste that URL into a browser. You should see a short text
     starting with {"ok":true,"app":"htn-screening-sync" ... and "keyConfigured":true.
     If keyConfigured is false, you did not change the KEY in step 5 – fix it and
-    see step 19.
+    see step 24.
 
-C. CONNECT THE PHONES
-13. On one phone, open the app: https://paulebe525.github.io/hypertension-screening/
-14. Go to the Records tab > Sync settings.
-15. Paste the Web App URL and type the secret key. Tap Save settings,
+C. TYPE THE VILLAGE NAMES
+13. Go back to your spreadsheet tab. A tab called "Villages" now appears at the
+    bottom (it is created the first time the web app is opened in step 12).
+    If you do not see it, add a tab named exactly  Villages  and type  Village
+    in cell A1.
+14. Open the Villages tab and type the correct village names, one per row,
+    starting in cell A2 (A1 stays "Village"). Check the spelling carefully –
+    phones can only pick from this list. You can add names at any time.
+
+D. CONNECT THE PHONES
+15. On one phone, open the app: https://paulebe525.github.io/hypertension-screening/
+16. Go to the Records tab > Sync settings.
+17. Paste the Web App URL and type the secret key. Tap Save settings,
     then Test connection. You should see "Connected — key accepted ✓".
-16. Easy way for everyone else: tap Copy setup link and send that link to your
+    The Village list card should then say "Using N villages from the Google Sheet".
+18. Easy way for everyone else: tap Copy setup link and send that link to your
     students/staff (WhatsApp or email). When they open it, the app asks
     "Set up Google Sheet sync on this phone?" – they tap OK and are done.
     The link contains the key, so share it only with your team.
-17. From now on every save, edit and follow-up update is sent to the sheet
+19. Entered by: the first time someone uses the app on a phone, the top of the
+    Screen form asks for their name ("Entered by"). Records cannot be saved
+    without it, and every record is saved with that name (column entered_by in
+    the sheet). If a different person uses the phone, tap Change at the top of
+    the Screen form and type their name.
+20. Village: on the Screen form, the village is chosen from a drop-down list – it
+    cannot be typed. Phones download the list from the Villages tab when the app
+    opens and when internet returns, and keep a copy for use offline. After you
+    add or correct villages, phones get the new list next time they open the app,
+    or immediately with Records tab > Refresh villages.
+21. From now on every save, edit and follow-up update is sent to the sheet
     automatically (tab "Records"). Without internet, records wait on the phone
     and are sent when the phone is back online, or when someone taps Sync now.
     The Records tab shows how many records are waiting, and each record shows
     "Synced" or "Not synced yet". Sample records are never sent.
 
-D. GOOD TO KNOW
-18. Do not rename the "Records" tab or delete the first (header) row. You may add
-    your own extra columns at the right, or analyse the data in other tabs.
-19. If you ever edit the script (for example to change the KEY): Deploy >
+E. GOOD TO KNOW
+22. Do not rename the "Records" or "Villages" tabs or delete their first (header)
+    row. You may add your own extra columns at the right of Records, or analyse
+    the data in other tabs.
+23. Before sync is set up (or if the Villages tab is empty), a coordinator can
+    type a temporary list on a phone: Records tab > Village list > Local village
+    list (one name per line) > Save local list. It is used only on that phone and
+    only until the Google Sheet list is available.
+24. If you ever edit the script (for example to change the KEY): Deploy >
     Manage deployments > pencil icon > Version: New version > Deploy. The URL
     stays the same. If you change the KEY, every phone must enter the new key
     (or open a new setup link).
-20. To stop all phones from sending: change the KEY (step 19), or
+25. To stop all phones from sending: change the KEY (step 24), or
     Deploy > Manage deployments > Archive.
-21. The sheet contains personal health data. Do not share the sheet itself
+26. The sheet contains personal health data. Do not share the sheet itself
     publicly; give view access only to people on the research team.

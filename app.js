@@ -8,7 +8,9 @@ var STORE_KEY = 'htnScreening.v1.records';
 var PREF_KEY = 'htnScreening.v1.prefs';
 var SYNC_KEY = 'htnScreening.v1.sync';        // {url, key, lastSyncAt}
 var DEVICE_KEY = 'htnScreening.v1.deviceId';  // generated once per phone/browser
-var APP_VERSION = '1.1';
+var APP_VERSION = '1.2';
+var VILLAGE_CACHE_KEY = 'htnScreening.v1.villages';      // {list, fetchedAt, url} from the sheet's Villages tab
+var LOCAL_VILLAGES_KEY = 'htnScreening.v1.localVillages'; // fallback list typed on this phone
 var SYNC_BATCH = 50;
 var CATS = ['normal', 'elevated', 'high', 'urgent'];
 var CAT_COLORS = { normal: '#2e7d32', elevated: '#f9a825', high: '#d84315', urgent: '#b71c1c' };
@@ -190,6 +192,32 @@ ta: {
   syncSyncedN: '{n} பதிவுகள் ஒத்திசைக்கப்பட்டன', syncNotSetupToast: 'முதலில் ஒத்திசைவை அமைக்கவும் (URL மற்றும் குறியீடு)', syncLine: 'Sheet ஒத்திசைவு'
 }
 };
+SYNC_I18N.en = Object.assign(SYNC_I18N.en, {
+  enteredBy: 'Entered by', enteredByPrompt: 'Your name (person entering records on this phone)', saveName: 'Save name', change: 'Change',
+  errEnteredBy: 'Enter your name (Entered by) first', nameSaved: 'Name saved', origEnteredBy: 'Originally entered by', updatedBy: 'Last updated by',
+  selectVillage: '— Select village —', notInList: '(not in list)', errVillage: 'Select a village from the list', errVillageList: 'Choose a village from the current list',
+  noVillages: 'No village list yet. The coordinator must add villages (Records tab > Village list).',
+  villageListTitle: 'Village list', refreshVillages: 'Refresh villages',
+  vSrcSheet: 'Using {n} villages from the Google Sheet (updated {d}).', vSrcLocal: 'Using the local list on this phone ({n} villages).',
+  vSrcNone: 'No village list yet.', vRefreshed: 'Village list updated ({n})', vRefreshing: 'Refreshing villages…',
+  vRefreshFail: 'Could not refresh villages: {e}. Using the saved list.', vSheetEmpty: 'The Villages tab in the Google Sheet is empty.',
+  vNeedSync: 'Set up Google Sheet sync to load the official village list.',
+  localListTitle: 'Local village list (fallback)', localListHint: 'Used only when no list is available from the Google Sheet. One village name per line.',
+  saveLocalList: 'Save local list', localNotInUse: 'Not in use now — the Google Sheet list is being used.', localSaved: 'Local village list saved ({n})', screenedByIf: 'Screened by (if a different person)'
+});
+SYNC_I18N.ta = Object.assign(SYNC_I18N.ta, {
+  enteredBy: 'பதிவு செய்பவர்', enteredByPrompt: 'உங்கள் பெயர் (இந்தக் கைபேசியில் பதிவு செய்பவர்)', saveName: 'பெயரைச் சேமி', change: 'மாற்று',
+  errEnteredBy: 'முதலில் உங்கள் பெயரை (பதிவு செய்பவர்) உள்ளிடவும்', nameSaved: 'பெயர் சேமிக்கப்பட்டது', origEnteredBy: 'முதலில் பதிவு செய்தவர்', updatedBy: 'கடைசியாக மாற்றியவர்',
+  selectVillage: '— கிராமத்தைத் தேர்ந்தெடுக்கவும் —', notInList: '(பட்டியலில் இல்லை)', errVillage: 'பட்டியலிலிருந்து கிராமத்தைத் தேர்ந்தெடுக்கவும்', errVillageList: 'தற்போதைய பட்டியலிலிருந்து கிராமத்தைத் தேர்ந்தெடுக்கவும்',
+  noVillages: 'கிராமப் பட்டியல் இன்னும் இல்லை. ஒருங்கிணைப்பாளர் கிராமங்களைச் சேர்க்க வேண்டும் (பதிவுகள் > கிராமப் பட்டியல்).',
+  villageListTitle: 'கிராமப் பட்டியல்', refreshVillages: 'கிராமப் பட்டியலைப் புதுப்பி',
+  vSrcSheet: 'Google Sheet-இலிருந்து {n} கிராமங்கள் பயன்பாட்டில் உள்ளன ({d} அன்று புதுப்பிக்கப்பட்டது).', vSrcLocal: 'இந்தக் கைபேசியின் உள்ளூர்ப் பட்டியல் பயன்பாட்டில் உள்ளது ({n} கிராமங்கள்).',
+  vSrcNone: 'கிராமப் பட்டியல் இன்னும் இல்லை.', vRefreshed: 'கிராமப் பட்டியல் புதுப்பிக்கப்பட்டது ({n})', vRefreshing: 'கிராமப் பட்டியல் புதுப்பிக்கப்படுகிறது…',
+  vRefreshFail: 'கிராமப் பட்டியலைப் புதுப்பிக்க முடியவில்லை: {e}. சேமித்த பட்டியல் பயன்படுத்தப்படுகிறது.', vSheetEmpty: 'Google Sheet-இன் Villages பக்கம் காலியாக உள்ளது.',
+  vNeedSync: 'அதிகாரப்பூர்வக் கிராமப் பட்டியலைப் பெற Google Sheet ஒத்திசைவை அமைக்கவும்.',
+  localListTitle: 'உள்ளூர்க் கிராமப் பட்டியல் (மாற்று வழி)', localListHint: 'Google Sheet-இலிருந்து பட்டியல் கிடைக்காதபோது மட்டும் பயன்படும். ஒரு வரிக்கு ஒரு கிராமப் பெயர்.',
+  saveLocalList: 'உள்ளூர்ப் பட்டியலைச் சேமி', localNotInUse: 'இப்போது பயன்பாட்டில் இல்லை — Google Sheet பட்டியல் பயன்படுத்தப்படுகிறது.', localSaved: 'உள்ளூர்க் கிராமப் பட்டியல் சேமிக்கப்பட்டது ({n})', screenedByIf: 'பரிசோதித்தவர் (வேறு நபர் என்றால்)'
+});
 Object.keys(SYNC_I18N).forEach(function (l) { Object.keys(SYNC_I18N[l]).forEach(function (k) { I18N[l][k] = SYNC_I18N[l][k]; }); });
 
 /* ------------------------------------------------------------- utilities */
@@ -282,12 +310,17 @@ var records = [];
 var prefs = {};
 var syncCfg = {};
 var deviceId = '';
+var villageCache = { list: [] };
+var localVillages = [];
 function loadAll() {
   try { records = JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); if (!Array.isArray(records)) records = []; }
   catch (e) { records = []; }
   // v1 records have no revision counter: give them rev 1 so they are queued for sync once.
   records.forEach(function (r) { if (!r.rev) r.rev = 1; });
   try { syncCfg = JSON.parse(localStorage.getItem(SYNC_KEY) || '{}') || {}; } catch (e) { syncCfg = {}; }
+  try { villageCache = JSON.parse(localStorage.getItem(VILLAGE_CACHE_KEY) || '{}') || {}; } catch (e) { villageCache = {}; }
+  if (!Array.isArray(villageCache.list)) villageCache.list = [];
+  try { localVillages = JSON.parse(localStorage.getItem(LOCAL_VILLAGES_KEY) || '[]'); if (!Array.isArray(localVillages)) localVillages = []; } catch (e) { localVillages = []; }
   deviceId = localStorage.getItem(DEVICE_KEY);
   if (!deviceId) { deviceId = makeDeviceId(); try { localStorage.setItem(DEVICE_KEY, deviceId); } catch (e) { /* ignore */ } }
   try { prefs = JSON.parse(localStorage.getItem(PREF_KEY) || '{}') || {}; } catch (e) { prefs = {}; }
@@ -312,7 +345,8 @@ function applyLang() {
   $('#langToggle').textContent = lang === 'ta' ? 'English' : 'தமிழ்';
   $('#langToggle').setAttribute('lang', lang === 'ta' ? 'en' : 'ta');
   $('#saveBtn').textContent = editingId ? t('saveChanges') : t('save');
-  updateLive();
+  updateLive(); renderVillageSelect(); renderEnteredBy();
+  if (editingId && getRec(editingId)) $('#editInfo').textContent = t('origEnteredBy') + ': ' + (getRec(editingId).enteredBy || '—');
   if (lastErrors) showErrors(lastErrors, false);
   if (lastResultId && !$('#resultPanel').hidden) renderResult(getRec(lastResultId));
   renderAll();
@@ -351,7 +385,8 @@ function readForm() {
     pulse: parseNum(f.pulse.value),
     tobacco: f.tobacco.checked, alcohol: f.alcohol.checked, diabetes: f.diabetes.checked, famHx: f.famHx.checked,
     heightCm: parseNum(f.heightCm.value), weightKg: parseNum(f.weightKg.value), waistCm: parseNum(f.waistCm.value),
-    screenDate: f.screenDate.value, screenedBy: f.screenedBy.value.trim(), notes: f.notes.value.trim()
+    screenDate: f.screenDate.value, screenedBy: f.screenedBy.value.trim(), notes: f.notes.value.trim(),
+    enteredBy: (prefs.enteredBy || '').trim()
   };
 }
 function inRangeInt(v, lo, hi) { return v != null && !isNaN(v) && Math.floor(v) === v && v >= lo && v <= hi; }
@@ -362,7 +397,12 @@ function validate(d) {
   if (!d.name || d.name.length < 2) e.name = 'errName';
   if (d.age == null) e.age = 'errRequired'; else if (!inRangeInt(d.age, 18, 120)) e.age = 'errAge';
   if (!d.sex) e.sex = 'errRequired';
-  if (!d.village) e.village = 'errRequired';
+  if (!d.enteredBy || d.enteredBy.length < 2) e.enteredBy = 'errEnteredBy';
+  if (!d.village) e.village = 'errVillage';
+  else if (effectiveVillages().indexOf(d.village) < 0) {
+    var orig = editingId ? getRec(editingId) : null;  // an old free-text village may be kept when editing
+    if (!orig || orig.village !== d.village) e.village = 'errVillageList';
+  }
   if (d.phone && !/^\d{10}$/.test(normPhone(d.phone))) e.phone = 'errPhone';
   if (!d.consent) e.consent = 'errConsent';
   [['sbp1', 'dbp1'], ['sbp2', 'dbp2']].forEach(function (p) {
@@ -422,12 +462,12 @@ function syncChecks() {
   $all('.check', form).forEach(function (l) { l.classList.toggle('on', $('input', l).checked); });
 }
 function resetForm(keepContext) {
-  var keep = { village: form.elements.village.value, screenedBy: form.elements.screenedBy.value, screenDate: form.elements.screenDate.value };
+  var keep = { village: form.elements.village.value, screenDate: form.elements.screenDate.value };
   form.reset();
   form.elements.screenDate.value = (keepContext && keep.screenDate) || todayStr();
-  form.elements.screenedBy.value = keep.screenedBy || prefs.screenedBy || '';
-  if (keepContext) form.elements.village.value = keep.village;
   editingId = null; lastErrors = null;
+  renderVillageSelect(keepContext && effectiveVillages().indexOf(keep.village) >= 0 ? keep.village : '');
+  renderEnteredBy();
   $('#editBanner').hidden = true;
   $('#saveBtn').textContent = t('save');
   showErrors({}, false); syncChecks(); updateLive();
@@ -435,7 +475,10 @@ function resetForm(keepContext) {
 function fillForm(r) {
   var f = form.elements;
   form.reset();
-  f.name.value = r.name; f.age.value = r.age; f.village.value = r.village; f.phone.value = r.phone || '';
+  f.name.value = r.name; f.age.value = r.age; f.phone.value = r.phone || '';
+  renderVillageSelect(r.village || '');
+  renderEnteredBy();
+  $('#editInfo').textContent = t('origEnteredBy') + ': ' + (r.enteredBy || '—');
   $all('input[name=sex]', form).forEach(function (x) { x.checked = x.value === r.sex; });
   f.consent.checked = !!r.consent;
   ['sbp1', 'dbp1', 'sbp2', 'dbp2', 'pulse', 'heightCm', 'weightKg', 'waistCm'].forEach(function (k) { f[k].value = r[k] == null ? '' : r[k]; });
@@ -457,6 +500,8 @@ function buildRecord(d, existing) {
   r.heightCm = d.heightCm; r.weightKg = d.weightKg; r.bmi = bmi; r.waistCm = d.waistCm;
   var prevCat = existing ? existing._prevCat : null;
   r.screenDate = d.screenDate; r.screenedBy = d.screenedBy; r.notes = d.notes; r.updatedAt = now;
+  if (!existing) r.enteredBy = d.enteredBy;  // who entered it; old records without a name stay blank
+  r.updatedBy = d.enteredBy;
   var fu = r.followUp || { required: false, dueDate: null, status: 'pending', doneDate: null, rechecks: [] };
   if (needsFollowUp(cat)) {
     if (!fu.required || prevCat !== cat || !fu.dueDate) fu.dueDate = defaultDueDate(cat, d.screenDate);
@@ -484,7 +529,6 @@ function onSubmit(ev) {
     r = buildRecord(d, null); records.push(r);
   }
   if (!saveAll()) { if (!editingId) records.pop(); return; }
-  prefs.screenedBy = d.screenedBy; savePrefs();
   scheduleSync(300);
   lastResultId = r.id;
   editingId = null; $('#editBanner').hidden = true;
@@ -514,6 +558,7 @@ function renderResult(r) {
     '<dt>' + esc(t('name')) + '</dt><dd>' + esc(r.name) + '</dd>' +
     '<dt>' + esc(t('age')) + ' / ' + esc(t('sex')) + '</dt><dd>' + r.age + ' / ' + esc(sexLabel(r.sex)) + '</dd>' +
     '<dt>' + esc(t('village')) + '</dt><dd>' + esc(r.village) + '</dd>' +
+    '<dt>' + esc(t('enteredBy')) + '</dt><dd>' + esc(r.enteredBy || '—') + '</dd>' +
     '<dt>' + esc(t('reading1')) + '</dt><dd>' + r.sbp1 + '/' + r.dbp1 + '</dd>' +
     '<dt>' + esc(t('reading2')) + '</dt><dd>' + r.sbp2 + '/' + r.dbp2 + '</dd>' +
     '<dt>' + esc(t('pulse')) + '</dt><dd>' + r.pulse + ' ' + esc(t('bpm')) + '</dd>' +
@@ -693,6 +738,8 @@ function renderRecords() {
       '<dt>BMI</dt><dd>' + (r.bmi != null ? fmtNum(r.bmi) : '—') + '</dd><dt>' + esc(t('waist')) + '</dt><dd>' + (r.waistCm != null ? fmtNum(r.waistCm) + ' cm' : '—') + '</dd>' +
       '<dt>' + esc(t('riskFactors')) + '</dt><dd>' + esc(rf.length ? rf.join(', ') : t('none')) + '</dd>' +
       '<dt>' + esc(t('phoneLabel')) + '</dt><dd>' + esc(r.phone || '—') + '</dd>' +
+      '<dt>' + esc(t('enteredBy')) + '</dt><dd>' + esc(r.enteredBy || '—') + '</dd>' +
+      (r.updatedBy && r.updatedBy !== r.enteredBy ? '<dt>' + esc(t('updatedBy')) + '</dt><dd>' + esc(r.updatedBy) + '</dd>' : '') +
       '<dt>' + esc(t('screenedBy')) + '</dt><dd>' + esc(r.screenedBy || '—') + '</dd>' +
       (r.notes ? '<dt>' + esc(t('notes')) + '</dt><dd>' + esc(r.notes) + '</dd>' : '') +
       '</dl><div class="btn-row" style="margin-top:10px"><button type="button" class="btn small" data-act="edit">' + esc(t('edit')) + '</button>' +
@@ -701,7 +748,7 @@ function renderRecords() {
 }
 
 /* -------------------------------------------------------------- export */
-var CSV_COLS = ['record_id', 'is_sample', 'screening_date', 'created_at', 'updated_at', 'screened_by', 'name', 'age', 'age_group', 'sex', 'village', 'phone', 'consent',
+var CSV_COLS = ['record_id', 'is_sample', 'screening_date', 'created_at', 'updated_at', 'entered_by', 'updated_by', 'screened_by', 'name', 'age', 'age_group', 'sex', 'village', 'phone', 'consent',
   'sbp1', 'dbp1', 'sbp2', 'dbp2', 'pulse', 'avg_sbp', 'avg_dbp', 'bp_category',
   'tobacco', 'alcohol', 'diabetes', 'family_history_htn', 'height_cm', 'weight_kg', 'bmi', 'bmi_category_asian', 'waist_cm', 'waist_high',
   'followup_required', 'followup_due_date', 'followup_status', 'followup_done_date', 'followup_overdue',
@@ -720,7 +767,7 @@ function recordToRow(r, today) {
   var wh = waistHigh(r.waistCm, r.sex);
   return {
     record_id: r.id, is_sample: yn(r.sample), screening_date: r.screenDate, created_at: r.createdAt, updated_at: r.updatedAt || '',
-    screened_by: r.screenedBy || '', name: r.name, age: r.age, age_group: ageGroup(r.age), sex: r.sex, village: r.village, phone: r.phone || '', consent: yn(r.consent),
+    entered_by: r.enteredBy || '', updated_by: r.updatedBy || '', screened_by: r.screenedBy || '', name: r.name, age: r.age, age_group: ageGroup(r.age), sex: r.sex, village: r.village, phone: r.phone || '', consent: yn(r.consent),
     sbp1: r.sbp1, dbp1: r.dbp1, sbp2: r.sbp2, dbp2: r.dbp2, pulse: r.pulse, avg_sbp: r.avgSbp, avg_dbp: r.avgDbp, bp_category: r.category,
     tobacco: yn(r.tobacco), alcohol: yn(r.alcohol), diabetes: yn(r.diabetes), family_history_htn: yn(r.famHx),
     height_cm: r.heightCm, weight_kg: r.weightKg, bmi: r.bmi, bmi_category_asian: r.bmi != null ? BMI_EN[bmiCategory(r.bmi)] : '', waist_cm: r.waistCm,
@@ -734,7 +781,7 @@ function recordToRow(r, today) {
     notes: r.notes || ''
   };
 }
-var TEXT_COLS = { screened_by: 1, name: 1, village: 1, notes: 1, phone: 1 };
+var TEXT_COLS = { entered_by: 1, updated_by: 1, screened_by: 1, name: 1, village: 1, notes: 1, phone: 1 };
 function buildCsv() {
   var today = todayStr();
   var lines = [CSV_COLS.join(',')];
@@ -781,7 +828,7 @@ function makeSampleRecords() {
       consent: true, sbp1: sbp1, dbp1: dbp1, sbp2: sbp2, dbp2: dbp2, pulse: ri(62, 98), avgSbp: avgS, avgDbp: avgD, category: cat,
       tobacco: rnd() < 0.3, alcohol: sex === 'M' && rnd() < 0.4, diabetes: rnd() < 0.2, famHx: rnd() < 0.35,
       heightCm: h, weightKg: w, bmi: calcBmi(h, w), waistCm: ri(68, 104),
-      screenDate: sd, screenedBy: 'Sample data', notes: 'Fictional sample record for demonstration',
+      screenDate: sd, screenedBy: 'Sample data', enteredBy: 'Sample data', updatedBy: 'Sample data', notes: 'Fictional sample record for demonstration',
       followUp: { required: false, dueDate: null, status: 'pending', doneDate: null, rechecks: [] }
     };
     if (needsFollowUp(cat)) {
@@ -811,7 +858,7 @@ function makeDeviceId() {
   for (var j = 0; j < 6; j++) s += chars[a[j] % chars.length];
   return 'DEV-' + s + '-' + Date.now().toString(36).toUpperCase().slice(-4);
 }
-function touch(r) { r.rev = (r.rev || 1) + 1; r.updatedAt = new Date().toISOString(); }
+function touch(r) { r.rev = (r.rev || 1) + 1; r.updatedAt = new Date().toISOString(); r.updatedBy = prefs.enteredBy || ''; }
 function saveSyncCfg() { try { localStorage.setItem(SYNC_KEY, JSON.stringify(syncCfg)); } catch (e) { /* ignore */ } }
 function isSyncConfigured() { return !!(syncCfg.url && syncCfg.key); }
 function isPending(r) { return !r.sample && (r.rev || 1) !== (r.syncedRev || 0); }
@@ -926,7 +973,7 @@ function saveSyncSettings() {
   syncCfg.url = v.url; syncCfg.key = v.key; saveSyncCfg();
   sync.status = 'idle'; sync.error = null; sync.backoff = 0;
   setSyncMsg(t('syncSaved'), 'ok'); toast(t('syncSaved'));
-  syncNow(false);
+  syncNow(false); refreshVillages(false);
 }
 function testConnection() {
   var v = readSyncForm();
@@ -978,14 +1025,103 @@ function updateBadge() {
   var n = records.filter(function (r) { var s = fuState(r, today); return s === 'overdue' || s === 'due'; }).length;
   $('#fuBadge').textContent = n ? String(n) : '';
 }
-function refreshVillageList() {
-  var seen = {}, opts = [];
-  records.forEach(function (r) { var k = r.village.trim().toLowerCase(); if (!seen[k]) { seen[k] = 1; opts.push(r.village.trim()); } });
-  opts.sort();
-  $('#villageList').innerHTML = opts.map(function (v) { return '<option value="' + esc(v) + '">'; }).join('');
+function refreshVillageList() { renderVillageSelect(); }
+
+/* --------------------------------------------------------- Entered by */
+var ebEditing = false;
+function renderEnteredBy() {
+  var name = prefs.enteredBy || '';
+  var editing = ebEditing || !name;
+  $('#ebView').hidden = editing; $('#ebEdit').hidden = !editing;
+  $('#ebName').textContent = name;
+  var inp = $('#ebInput');
+  if (editing && document.activeElement !== inp) inp.value = name || prefs.screenedBy || '';
 }
+function saveEnteredBy() {
+  var v = $('#ebInput').value.replace(/\s+/g, ' ').trim();
+  var fl = $('#ebEdit');
+  if (v.length < 2) { fl.classList.add('invalid'); $('.err', fl).textContent = t('errEnteredBy'); $('#ebInput').focus(); return; }
+  prefs.enteredBy = v.slice(0, 60); savePrefs();
+  ebEditing = false; fl.classList.remove('invalid'); $('.err', fl).textContent = '';
+  renderEnteredBy(); toast(t('nameSaved'));
+  if (lastErrors) { var errs = validate(readForm()); lastErrors = Object.keys(errs).length ? errs : null; showErrors(errs, false); }
+}
+
+/* --------------------------------------------------------- Village list
+ * Source of truth: "Villages" tab of the Google Sheet (fetched with the sync key, cached for offline use).
+ * Fallback: a local list typed in Records > Village list, used only when the sheet list is empty/unavailable. */
+var villageState = { busy: false, error: null, promise: null };
+function cleanVillageList(arr) {
+  var seen = {}, out = [];
+  (arr || []).forEach(function (v) {
+    var n = String(v == null ? '' : v).replace(/\s+/g, ' ').trim().slice(0, 80);
+    if (n && !seen[n.toLowerCase()]) { seen[n.toLowerCase()] = 1; out.push(n); }
+  });
+  return out.slice(0, 2000);
+}
+function villageSource() { return villageCache.list.length ? 'sheet' : (localVillages.length ? 'local' : 'none'); }
+function effectiveVillages() { return villageCache.list.length ? villageCache.list : localVillages; }
+function renderVillageSelect(selected) {
+  var sel = form && form.elements.village; if (!sel) return;
+  if (selected == null) selected = sel.value;
+  var list = effectiveVillages(), inList = list.indexOf(selected) >= 0;
+  var orig = editingId ? getRec(editingId) : null;
+  var html = '<option value="">' + esc(t('selectVillage')) + '</option>' +
+    list.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('');
+  // Old free-text village of the record being edited: keep it selectable so nothing is lost.
+  if (selected && !inList && orig && orig.village === selected) html += '<option value="' + esc(selected) + '">' + esc(selected + ' ' + t('notInList')) + '</option>';
+  else if (!inList) selected = '';
+  sel.innerHTML = html; sel.value = selected || '';
+  var hint = $('#villageHint'); hint.textContent = list.length ? '' : t('noVillages'); hint.hidden = !!list.length;
+}
+function renderVillageUI() {
+  var box = $('#villageStatus'); if (!box) return;
+  var src = villageSource(), cls, txt;
+  if (villageState.busy) { cls = 'ss-busy'; txt = t('vRefreshing'); }
+  else if (src === 'sheet') { cls = 'ss-ok'; txt = '✓ ' + t('vSrcSheet', { n: villageCache.list.length, d: villageCache.fetchedAt ? new Date(villageCache.fetchedAt).toLocaleString() : '' }); }
+  else if (src === 'local') { cls = 'ss-wait'; txt = t('vSrcLocal', { n: localVillages.length }); }
+  else { cls = 'ss-err'; txt = t('vSrcNone'); }
+  var extra = [];
+  if (src !== 'sheet' && isSyncConfigured() && villageCache.fetchedAt && !villageState.error) extra.push(t('vSheetEmpty'));
+  if (!isSyncConfigured() && src !== 'sheet') extra.push(t('vNeedSync'));
+  if (villageState.error && !villageState.busy) extra.push(t('vRefreshFail', { e: errText(villageState.error) }));
+  box.className = 'sync-status ' + cls; box.setAttribute('data-source', src);
+  box.innerHTML = '<div class="ss-main">' + esc(txt) + '</div>' + extra.map(function (x) { return '<div class="hint">' + esc(x) + '</div>'; }).join('');
+  $('#refreshVillagesBtn').disabled = villageState.busy;
+  var nu = $('#localNotInUse'); nu.textContent = t('localNotInUse'); nu.hidden = src !== 'sheet';
+  var ta = $('#localVillagesInput'); if (document.activeElement !== ta) ta.value = localVillages.join('\n');
+}
+function refreshVillages(manual) {
+  if (!isSyncConfigured()) { if (manual) toast(t('vNeedSync')); renderVillageUI(); return Promise.resolve(false); }
+  if (navigator.onLine === false) { if (manual) toast(t('vRefreshFail', { e: errText('network') })); return Promise.resolve(false); }
+  if (villageState.busy) return villageState.promise;
+  villageState.busy = true; renderVillageUI();
+  var u = syncCfg.url;
+  var getUrl = u + (u.indexOf('?') >= 0 ? '&' : '?') + 'action=villages&key=' + encodeURIComponent(syncCfg.key) + '&t=' + Date.now();
+  villageState.promise = httpJson(getUrl, { method: 'GET' }, 20000).then(function (d) {
+    if (!d || d.ok !== true || !Array.isArray(d.villages)) throw syncErr((d && d.error) || 'bad');
+    villageCache = { list: cleanVillageList(d.villages), fetchedAt: new Date().toISOString(), url: u };
+    try { localStorage.setItem(VILLAGE_CACHE_KEY, JSON.stringify(villageCache)); } catch (e) { /* ignore */ }
+    villageState.error = null;
+    if (manual) toast(villageCache.list.length ? t('vRefreshed', { n: villageCache.list.length }) : t('vSheetEmpty'));
+    return true;
+  }).catch(function (err) {
+    villageState.error = err.code || 'network';   // keep the cached list
+    if (manual) toast(t('vRefreshFail', { e: errText(villageState.error) }));
+    return false;
+  }).then(function (res) { villageState.busy = false; renderVillageUI(); renderVillageSelect(); return res; });
+  return villageState.promise;
+}
+function saveLocalVillages() {
+  localVillages = cleanVillageList($('#localVillagesInput').value.split(/\r?\n/));
+  try { localStorage.setItem(LOCAL_VILLAGES_KEY, JSON.stringify(localVillages)); } catch (e) { /* ignore */ }
+  $('#localVillagesInput').value = localVillages.join('\n');
+  toast(t('localSaved', { n: localVillages.length }));
+  renderVillageUI(); renderVillageSelect();
+}
+
 function renderAll() {
-  updateBadge(); updateSyncUI();
+  updateBadge(); updateSyncUI(); renderVillageUI();
   if (currentView === 'followup') renderFollowup();
   if (currentView === 'dashboard') renderDashboard();
   if (currentView === 'records') renderRecords();
@@ -998,7 +1134,6 @@ function init() {
   form = $('#screenForm');
   form.elements.screenDate.value = todayStr();
   form.elements.screenDate.max = todayStr();
-  form.elements.screenedBy.value = prefs.screenedBy || '';
 
   $('#langToggle').addEventListener('click', function () { lang = lang === 'en' ? 'ta' : 'en'; prefs.lang = lang; savePrefs(); applyLang(); });
   $all('.tabbar button').forEach(function (b) { b.addEventListener('click', function () { showView(b.getAttribute('data-view')); }); });
@@ -1082,6 +1217,14 @@ function init() {
     records = []; saveAll(); toast(t('cleared')); renderAll(); refreshVillageList();
   });
 
+  // ---- Entered by + villages
+  $('#ebSave').addEventListener('click', saveEnteredBy);
+  $('#ebInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); saveEnteredBy(); } });
+  $('#ebChange').addEventListener('click', function () { ebEditing = true; renderEnteredBy(); $('#ebInput').focus(); });
+  $('#refreshVillagesBtn').addEventListener('click', function () { refreshVillages(true); });
+  $('#saveLocalVillagesBtn').addEventListener('click', saveLocalVillages);
+  window.addEventListener('online', function () { refreshVillages(false); });
+
   // ---- Google Sheet sync wiring
   fillSyncForm();
   $('#syncSaveBtn').addEventListener('click', saveSyncSettings);
@@ -1095,10 +1238,11 @@ function init() {
   window.addEventListener('online', function () { sync.backoff = 0; updateSyncUI(); syncNow(false); });
   window.addEventListener('offline', function () { updateSyncUI(); });
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') syncNow(false); });
-  window.addEventListener('hashchange', function () { if (applySetupLink()) { showView('records'); syncNow(false); } });
+  window.addEventListener('hashchange', function () { if (applySetupLink()) { showView('records'); syncNow(false); refreshVillages(false); } });
   setInterval(function () { if (!sync.busy && sync.status !== 'error' && pendingRecords().length) syncNow(false); }, 60000);
   var fromLink = applySetupLink();
   if (!isSyncConfigured()) $('#syncSettings').open = true;
+  if (villageSource() !== 'sheet') $('#localVillagesBox').open = true;
 
   // Ask the browser not to evict our data (best effort).
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignore */ }
@@ -1107,11 +1251,13 @@ function init() {
   applyLang();
   if (fromLink) showView('records');
   syncNow(false); // retry anything queued from earlier sessions
+  refreshVillages(false);
 }
 
 // Expose pure functions for automated testing.
 window.HTN = { classify: classify, avg2: avg2, calcBmi: calcBmi, bmiCategory: bmiCategory, defaultDueDate: defaultDueDate,
   ageGroup: ageGroup, validate: validate, buildCsv: buildCsv, normPhone: normPhone, CSV_COLS: CSV_COLS,
+  refreshVillages: refreshVillages, effectiveVillages: function () { return effectiveVillages().slice(); }, villageSource: function () { return villageSource(); },
   syncNow: syncNow, pendingCount: function () { return pendingRecords().length; }, deviceId: function () { return deviceId; } };
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();

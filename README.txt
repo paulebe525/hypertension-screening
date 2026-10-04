@@ -1,4 +1,4 @@
-Hypertension Screening – Version 1.1 (adds Google Sheet sync)
+Hypertension Screening – Version 1.2 (Google Sheet sync, Entered by, village list)
 Scudder College of Nursing, Ranipet (Digital Health)
 
 HOW TO OPEN
@@ -11,7 +11,8 @@ HOW TO OPEN
   as long as the page stays open/cached. Each phone/browser keeps its OWN data.
 
 TABS
-  Screen     – register person (consent required) + two BP readings + pulse + risk factors.
+  Screen     – "Entered by" (your name, asked once per phone, required) at the top; register
+               person (village chosen from a list, consent required) + two BP readings + pulse + risk factors.
                Average BP and risk flag are shown live and after saving.
   Follow-up  – everyone flagged High / Urgent; editable recheck due date, add recheck
                reading, mark done / reopen. Filters: Pending, Overdue, Done, All.
@@ -52,3 +53,16 @@ GOOGLE SHEET SYNC (v1.1)
   - Columns = the CSV columns + synced_at + device_id (a random ID made once per phone).
   - Sample records are never sent. Deleting a record on a phone does NOT delete it
     from the sheet (delete the row in the sheet if needed).
+
+ENTERED BY + VILLAGE LIST (v1.2)
+  - Entered by: asked once per phone at the top of the Screen form (tap Change to switch
+    person). Required for every new record; saved as entered_by (CSV + sheet). Edits and
+    follow-up updates record the current name as updated_by. Old records keep a blank
+    entered_by.
+  - Village: chosen from a drop-down, never typed. Source of truth = the "Villages" tab of
+    the Google Sheet (column A, header "Village"); the app downloads it on start, when
+    internet returns and with Records > Village list > Refresh villages, and caches it for
+    offline use. If no sheet list is available (sync not set up, or the tab is empty) the
+    app uses the phone's "Local village list (fallback)", edited in the same card.
+  - Old records with a free-text village keep it; when edited it is shown as
+    "<name> (not in list)" and can be kept or changed to a listed village.
