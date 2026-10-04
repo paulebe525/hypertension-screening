@@ -14,7 +14,8 @@
  *   1. Change KEY below to your own long secret (letters and numbers).
  *   2. Deploy > New deployment > Web app; Execute as: Me; Who has access: Anyone.
  *   3. Put the Web App URL and the same KEY into the app (Records > Sync settings).
- *   4. Type the village names in the "Villages" tab, one per row under the header.
+ *   4. Check/add village names in the "Villages" tab, one per row under the header
+ *      (it starts with Gudimallur, Avarakarai, Maniyampattu).
  *
  * After changing this code, use Deploy > Manage deployments > Edit (pencil) >
  * Version: New version > Deploy, so the existing URL keeps working.
@@ -27,6 +28,8 @@ const KEY = 'CHANGE-ME-TO-A-LONG-SECRET';
 const PLACEHOLDER_KEY = 'CHANGE-ME-TO-A-LONG-SECRET'; // used to detect "KEY not set yet"
 const SHEET_NAME = 'Records';                          // tab is created automatically
 const VILLAGES_SHEET = 'Villages';                     // column A, header "Village" in row 1
+// Names put in the Villages tab ONLY when the script creates the tab (an existing tab is never changed).
+const DEFAULT_VILLAGES = ['Gudimallur', 'Avarakarai', 'Maniyampattu'];
 const MAX_RECORDS_PER_REQUEST = 200;
 
 // Same columns, same order, as the app's CSV export, plus two sync columns.
@@ -171,15 +174,26 @@ function keyError_(key) {
   return null;
 }
 
-/** Creates the Villages tab with the header "Village" in A1 if it is missing. */
+/**
+ * Creates the Villages tab if it is missing: header "Village" in A1 and the default
+ * village names below it. An existing tab is never overwritten (only an empty A1 gets the header).
+ */
 function ensureVillagesSheet_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sh = ss.getSheetByName(VILLAGES_SHEET);
   if (!sh) {
+    let created = null;
     try {
-      sh = ss.insertSheet(VILLAGES_SHEET);
+      created = ss.insertSheet(VILLAGES_SHEET);
     } catch (err) {               // another request created it at the same moment
       sh = ss.getSheetByName(VILLAGES_SHEET);
+    }
+    if (created) {
+      const rows = [['Village']].concat(DEFAULT_VILLAGES.map(function (v) { return [v]; }));
+      created.getRange(1, 1, rows.length, 1).setValues(rows);
+      created.getRange(1, 1).setFontWeight('bold');
+      created.setFrozenRows(1);
+      return created;
     }
   }
   if (sh && String(sh.getRange(1, 1).getValue()).trim() === '') {

@@ -41,12 +41,15 @@ B. PUBLISH IT AS A WEB APP
 
 C. TYPE THE VILLAGE NAMES
 13. Go back to your spreadsheet tab. A tab called "Villages" now appears at the
-    bottom (it is created the first time the web app is opened in step 12).
-    If you do not see it, add a tab named exactly  Villages  and type  Village
-    in cell A1.
+    bottom (it is created the first time the web app is opened in step 12),
+    already containing Gudimallur, Avarakarai and Maniyampattu.
+    If you do not see it, add a tab named exactly  Villages , type  Village
+    in cell A1 and the village names below it.
 14. Open the Villages tab and type the correct village names, one per row,
-    starting in cell A2 (A1 stays "Village"). Check the spelling carefully –
+    under the existing ones (A1 stays "Village"). Check the spelling carefully –
     phones can only pick from this list. You can add names at any time.
+    (Until a phone has downloaded this list, it uses the built-in list:
+    Gudimallur, Avarakarai, Maniyampattu.)
 
 D. CONNECT THE PHONES
 15. On one phone, open the app: https://paulebe525.github.io/hypertension-screening/

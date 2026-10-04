@@ -1,4 +1,4 @@
-Hypertension Screening – Version 1.2 (Google Sheet sync, Entered by, village list)
+Hypertension Screening – Version 1.2.1 (Google Sheet sync, Entered by, village list)
 Scudder College of Nursing, Ranipet (Digital Health)
 
 HOW TO OPEN
@@ -64,5 +64,8 @@ ENTERED BY + VILLAGE LIST (v1.2)
     internet returns and with Records > Village list > Refresh villages, and caches it for
     offline use. If no sheet list is available (sync not set up, or the tab is empty) the
     app uses the phone's "Local village list (fallback)", edited in the same card.
+    If that is empty too, the built-in list is used: Gudimallur, Avarakarai, Maniyampattu.
+    Precedence: sheet Villages tab (non-empty) > local list > built-in list.
+    A newly created Villages tab starts with the same three names.
   - Old records with a free-text village keep it; when edited it is shown as
     "<name> (not in list)" and can be kept or changed to a listed village.

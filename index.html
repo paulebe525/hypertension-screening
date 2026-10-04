@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b5f8a">
 <meta name="description" content="Offline hypertension (BP) screening tool for community screening camps">
 <title>BP Screening – Scudder College of Nursing</title>
-<link rel="stylesheet" href="styles.css?v=1.2">
+<link rel="stylesheet" href="styles.css?v=1.2.1">
 </head>
 <body>
 <header class="topbar">
@@ -244,6 +244,7 @@
       <p class="hint" data-i18n="localListHint">Used only when no list is available from the Google Sheet. One village name per line.</p>
       <p class="hint" id="localNotInUse" style="font-weight:700;color:var(--elevated)" hidden></p>
       <textarea id="localVillagesInput" rows="6" spellcheck="false" aria-label="Local village list"></textarea>
+      <p class="hint" id="localEmptyNote"></p>
       <div class="btn-col" style="margin-top:8px"><button type="button" class="btn primary" id="saveLocalVillagesBtn" data-i18n="saveLocalList">Save local list</button></div>
     </details>
   </div>
@@ -264,7 +265,7 @@
   </div>
   <div id="recList"></div>
 </section>
-<p class="foot-note">HTN Screening v1.2 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
+<p class="foot-note">HTN Screening v1.2.1 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
 </main>
 
 <nav class="tabbar" aria-label="Main">
@@ -283,6 +284,6 @@
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:16px">Please enable JavaScript to use this app.</p></noscript>
-<script src="app.js?v=1.2"></script>
+<script src="app.js?v=1.2.1"></script>
 </body>
 </html>

@@ -8,7 +8,10 @@ var STORE_KEY = 'htnScreening.v1.records';
 var PREF_KEY = 'htnScreening.v1.prefs';
 var SYNC_KEY = 'htnScreening.v1.sync';        // {url, key, lastSyncAt}
 var DEVICE_KEY = 'htnScreening.v1.deviceId';  // generated once per phone/browser
-var APP_VERSION = '1.2';
+var APP_VERSION = '1.2.1';
+// Built-in village list (exact spellings from the project lead). Used until the sheet's Villages tab
+// or a local fallback list provides one. Precedence: sheet (non-empty) > local list > these defaults.
+var DEFAULT_VILLAGES = ['Gudimallur', 'Avarakarai', 'Maniyampattu'];
 var VILLAGE_CACHE_KEY = 'htnScreening.v1.villages';      // {list, fetchedAt, url} from the sheet's Villages tab
 var LOCAL_VILLAGES_KEY = 'htnScreening.v1.localVillages'; // fallback list typed on this phone
 var SYNC_BATCH = 50;
@@ -199,7 +202,7 @@ SYNC_I18N.en = Object.assign(SYNC_I18N.en, {
   noVillages: 'No village list yet. The coordinator must add villages (Records tab > Village list).',
   villageListTitle: 'Village list', refreshVillages: 'Refresh villages',
   vSrcSheet: 'Using {n} villages from the Google Sheet (updated {d}).', vSrcLocal: 'Using the local list on this phone ({n} villages).',
-  vSrcNone: 'No village list yet.', vRefreshed: 'Village list updated ({n})', vRefreshing: 'Refreshing villages…',
+  vSrcNone: 'No village list yet.', vSrcDefault: 'Using the built-in village list ({n} villages).', localEmptyUsesDefault: 'Leave empty to use the built-in list.', vRefreshed: 'Village list updated ({n})', vRefreshing: 'Refreshing villages…',
   vRefreshFail: 'Could not refresh villages: {e}. Using the saved list.', vSheetEmpty: 'The Villages tab in the Google Sheet is empty.',
   vNeedSync: 'Set up Google Sheet sync to load the official village list.',
   localListTitle: 'Local village list (fallback)', localListHint: 'Used only when no list is available from the Google Sheet. One village name per line.',
@@ -212,7 +215,7 @@ SYNC_I18N.ta = Object.assign(SYNC_I18N.ta, {
   noVillages: 'கிராமப் பட்டியல் இன்னும் இல்லை. ஒருங்கிணைப்பாளர் கிராமங்களைச் சேர்க்க வேண்டும் (பதிவுகள் > கிராமப் பட்டியல்).',
   villageListTitle: 'கிராமப் பட்டியல்', refreshVillages: 'கிராமப் பட்டியலைப் புதுப்பி',
   vSrcSheet: 'Google Sheet-இலிருந்து {n} கிராமங்கள் பயன்பாட்டில் உள்ளன ({d} அன்று புதுப்பிக்கப்பட்டது).', vSrcLocal: 'இந்தக் கைபேசியின் உள்ளூர்ப் பட்டியல் பயன்பாட்டில் உள்ளது ({n} கிராமங்கள்).',
-  vSrcNone: 'கிராமப் பட்டியல் இன்னும் இல்லை.', vRefreshed: 'கிராமப் பட்டியல் புதுப்பிக்கப்பட்டது ({n})', vRefreshing: 'கிராமப் பட்டியல் புதுப்பிக்கப்படுகிறது…',
+  vSrcNone: 'கிராமப் பட்டியல் இன்னும் இல்லை.', vSrcDefault: 'உள்ளமைந்த கிராமப் பட்டியல் பயன்பாட்டில் உள்ளது ({n} கிராமங்கள்).', localEmptyUsesDefault: 'உள்ளமைந்த பட்டியலைப் பயன்படுத்தக் காலியாக விடவும்.', vRefreshed: 'கிராமப் பட்டியல் புதுப்பிக்கப்பட்டது ({n})', vRefreshing: 'கிராமப் பட்டியல் புதுப்பிக்கப்படுகிறது…',
   vRefreshFail: 'கிராமப் பட்டியலைப் புதுப்பிக்க முடியவில்லை: {e}. சேமித்த பட்டியல் பயன்படுத்தப்படுகிறது.', vSheetEmpty: 'Google Sheet-இன் Villages பக்கம் காலியாக உள்ளது.',
   vNeedSync: 'அதிகாரப்பூர்வக் கிராமப் பட்டியலைப் பெற Google Sheet ஒத்திசைவை அமைக்கவும்.',
   localListTitle: 'உள்ளூர்க் கிராமப் பட்டியல் (மாற்று வழி)', localListHint: 'Google Sheet-இலிருந்து பட்டியல் கிடைக்காதபோது மட்டும் பயன்படும். ஒரு வரிக்கு ஒரு கிராமப் பெயர்.',
@@ -1059,8 +1062,11 @@ function cleanVillageList(arr) {
   });
   return out.slice(0, 2000);
 }
-function villageSource() { return villageCache.list.length ? 'sheet' : (localVillages.length ? 'local' : 'none'); }
-function effectiveVillages() { return villageCache.list.length ? villageCache.list : localVillages; }
+function villageSource() { return villageCache.list.length ? 'sheet' : (localVillages.length ? 'local' : (DEFAULT_VILLAGES.length ? 'default' : 'none')); }
+function effectiveVillages() {
+  var src = villageSource();
+  return src === 'sheet' ? villageCache.list : src === 'local' ? localVillages : DEFAULT_VILLAGES;
+}
 function renderVillageSelect(selected) {
   var sel = form && form.elements.village; if (!sel) return;
   if (selected == null) selected = sel.value;
@@ -1080,6 +1086,7 @@ function renderVillageUI() {
   if (villageState.busy) { cls = 'ss-busy'; txt = t('vRefreshing'); }
   else if (src === 'sheet') { cls = 'ss-ok'; txt = '✓ ' + t('vSrcSheet', { n: villageCache.list.length, d: villageCache.fetchedAt ? new Date(villageCache.fetchedAt).toLocaleString() : '' }); }
   else if (src === 'local') { cls = 'ss-wait'; txt = t('vSrcLocal', { n: localVillages.length }); }
+  else if (src === 'default') { cls = 'ss-wait'; txt = t('vSrcDefault', { n: DEFAULT_VILLAGES.length }); }
   else { cls = 'ss-err'; txt = t('vSrcNone'); }
   var extra = [];
   if (src !== 'sheet' && isSyncConfigured() && villageCache.fetchedAt && !villageState.error) extra.push(t('vSheetEmpty'));
@@ -1090,6 +1097,8 @@ function renderVillageUI() {
   $('#refreshVillagesBtn').disabled = villageState.busy;
   var nu = $('#localNotInUse'); nu.textContent = t('localNotInUse'); nu.hidden = src !== 'sheet';
   var ta = $('#localVillagesInput'); if (document.activeElement !== ta) ta.value = localVillages.join('\n');
+  ta.placeholder = DEFAULT_VILLAGES.join('\n');
+  $('#localEmptyNote').textContent = t('localEmptyUsesDefault') + ' (' + DEFAULT_VILLAGES.join(', ') + ')';
 }
 function refreshVillages(manual) {
   if (!isSyncConfigured()) { if (manual) toast(t('vNeedSync')); renderVillageUI(); return Promise.resolve(false); }
@@ -1242,7 +1251,7 @@ function init() {
   setInterval(function () { if (!sync.busy && sync.status !== 'error' && pendingRecords().length) syncNow(false); }, 60000);
   var fromLink = applySetupLink();
   if (!isSyncConfigured()) $('#syncSettings').open = true;
-  if (villageSource() !== 'sheet') $('#localVillagesBox').open = true;
+  if (villageSource() === 'local') $('#localVillagesBox').open = true;
 
   // Ask the browser not to evict our data (best effort).
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignore */ }
