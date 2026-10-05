@@ -4,13 +4,13 @@
  *   it goes straight to the network; the app's own offline queue handles failures.
  * - A new version waits until the user taps "New version available – tap to update".
  */
-var VERSION = '1.3.0';
+var VERSION = '1.3.1';
 var CACHE = 'htn-shell-' + VERSION;
 var SHELL = [
   './',
   './index.html',
-  './app.js?v=1.3',
-  './styles.css?v=1.3',
+  './app.js?v=1.3.1',
+  './styles.css?v=1.3.1',
   './manifest.json',
   './favicon.ico',
   './icons/favicon.svg',

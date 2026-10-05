@@ -15,7 +15,7 @@
 <meta name="application-name" content="BP Screening">
 <meta name="description" content="Offline hypertension (BP) screening tool for community screening camps">
 <title>BP Screening – Scudder College of Nursing</title>
-<link rel="stylesheet" href="styles.css?v=1.3">
+<link rel="stylesheet" href="styles.css?v=1.3.1">
 </head>
 <body>
 <header class="topbar">
@@ -113,30 +113,30 @@
       <legend data-i18n="secBP">2. Blood pressure</legend>
       <p class="hint" data-i18n="bpHint">Seated, rested 5 minutes. Take two readings 1–2 minutes apart.</p>
       <div class="reading">
-        <div class="reading-title" data-i18n="reading1">Reading 1</div>
+        <div class="reading-title"><span data-i18n="reading1">Reading 1</span> <span class="unit">(mmHg)</span></div>
         <div class="row2">
           <div class="field" data-f="sbp1">
-            <label class="lbl" for="f-sbp1"><span data-i18n="systolic">Systolic (upper)</span> <span class="unit">mmHg</span></label>
+            <label class="lbl" for="f-sbp1"><span data-i18n="systolic">Systolic (upper)</span></label>
             <input id="f-sbp1" name="sbp1" type="number" inputmode="numeric" min="60" max="300">
             <div class="err"></div>
           </div>
           <div class="field" data-f="dbp1">
-            <label class="lbl" for="f-dbp1"><span data-i18n="diastolic">Diastolic (lower)</span> <span class="unit">mmHg</span></label>
+            <label class="lbl" for="f-dbp1"><span data-i18n="diastolic">Diastolic (lower)</span></label>
             <input id="f-dbp1" name="dbp1" type="number" inputmode="numeric" min="30" max="200">
             <div class="err"></div>
           </div>
         </div>
       </div>
       <div class="reading">
-        <div class="reading-title" data-i18n="reading2">Reading 2</div>
+        <div class="reading-title"><span data-i18n="reading2">Reading 2</span> <span class="unit">(mmHg)</span></div>
         <div class="row2">
           <div class="field" data-f="sbp2">
-            <label class="lbl" for="f-sbp2"><span data-i18n="systolic">Systolic (upper)</span> <span class="unit">mmHg</span></label>
+            <label class="lbl" for="f-sbp2"><span data-i18n="systolic">Systolic (upper)</span></label>
             <input id="f-sbp2" name="sbp2" type="number" inputmode="numeric" min="60" max="300">
             <div class="err"></div>
           </div>
           <div class="field" data-f="dbp2">
-            <label class="lbl" for="f-dbp2"><span data-i18n="diastolic">Diastolic (lower)</span> <span class="unit">mmHg</span></label>
+            <label class="lbl" for="f-dbp2"><span data-i18n="diastolic">Diastolic (lower)</span></label>
             <input id="f-dbp2" name="dbp2" type="number" inputmode="numeric" min="30" max="200">
             <div class="err"></div>
           </div>
@@ -178,7 +178,7 @@
 
     <fieldset class="card">
       <legend data-i18n="secDetails">4. Screening details</legend>
-      <div class="row2">
+      <div class="stack">
         <div class="field" data-f="screenDate">
           <label class="lbl" for="f-date"><span data-i18n="screenDate">Screening date</span> <span class="req">*</span></label>
           <input id="f-date" name="screenDate" type="date">
@@ -290,7 +290,7 @@
   </div>
   <div id="recList"></div>
 </section>
-<p class="foot-note">HTN Screening v1.3 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
+<p class="foot-note">HTN Screening v1.3.1 · Scudder College of Nursing · <span data-i18n="footNote">Screening tool only — not a diagnosis.</span></p>
 </main>
 
 <nav class="tabbar" aria-label="Main">
@@ -309,6 +309,6 @@
 </nav>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <noscript><p style="padding:16px">Please enable JavaScript to use this app.</p></noscript>
-<script src="app.js?v=1.3"></script>
+<script src="app.js?v=1.3.1"></script>
 </body>
 </html>

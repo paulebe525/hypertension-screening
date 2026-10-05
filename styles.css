@@ -37,8 +37,8 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid v
 .field.invalid input,.field.invalid .seg{border-color:var(--urgent);background:#fff7f7}
 .err{color:var(--urgent);font-size:.9rem;font-weight:600;margin-top:4px}
 .err:empty{display:none}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .seg{display:flex;border:2px solid var(--line);border-radius:10px;overflow:hidden;min-height:52px}
 .seg label{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:600;border-left:1px solid var(--line);padding:4px;text-align:center;font-size:1rem}
 .seg label:first-child{border-left:0}
@@ -78,8 +78,11 @@ input:focus,textarea:focus,select:focus,button:focus-visible{outline:3px solid v
 .result-flag.cat-elevated{color:#3d2a00}
 .result-flag.cat-urgent{animation:pulse 1.4s ease-in-out 3}
 @keyframes pulse{50%{box-shadow:0 0 0 10px rgba(183,28,28,.25)}}
-.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:1rem}
+.kv{display:grid;grid-template-columns:minmax(6.5em,38%) minmax(0,1fr);gap:0 12px;font-size:1rem;align-items:stretch}
 .kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:600}
+.kv dt,.kv dd{padding:6px 0;border-bottom:1px solid #edf1f5;min-width:0;overflow-wrap:break-word}
+.kv dd{overflow-wrap:anywhere}
+.kv dt:last-of-type,.kv dd:last-of-type{border-bottom:0}
 .advice{border-left:6px solid var(--brand);background:#eef6fb;padding:10px 12px;border-radius:8px;font-weight:600}
 /* Lists */
 .filter-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
@@ -136,8 +139,7 @@ details.rec-details summary{cursor:pointer;color:var(--brand);font-weight:700;ma
 .seg label.on{background:var(--brand);color:#fff}
 .check.on{border-color:var(--brand);background:#eef6fb}
 .check.consent.on{border-color:var(--normal);background:var(--normal-bg)}
-.age-field input{max-width:180px}
-.tabbar button span{overflow-wrap:anywhere}
+.tabbar button span{overflow-wrap:break-word;max-width:100%}
 html[lang=ta] .tabbar button{font-size:.72rem}
 /* Google Sheet sync */
 .sync-status{border-radius:10px;padding:12px;font-weight:700;border-left:8px solid #9aa9b6;background:#eef2f5}
@@ -176,3 +178,46 @@ select{appearance:auto}
 .install-body{flex:1;min-width:0}
 .ios-hint{font-weight:700;color:var(--brand-dark);margin-top:4px}
 @media (display-mode: standalone){ .install-card{display:none!important} }
+/* v1.3.1 alignment fixes */
+/* Date inputs: iOS Safari gives native date controls a large intrinsic width and centred text,
+   which made them overflow half-width columns. Normalise everywhere. */
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;width:100%;min-width:0;max-width:100%;text-align:left;line-height:1.3}
+input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0;min-height:1.3em}
+input[type=date]::-webkit-datetime-edit{padding:0}
+input[type=date]::-webkit-calendar-picker-indicator{margin-left:auto}
+input,select,textarea{min-width:0;max-width:100%}
+/* Paired fields: equal columns; label rows share a height so the boxes line up even when one label wraps */
+.row2,.row3{align-items:start}
+.row2>.field,.row3>.field{min-width:0}
+@supports (grid-template-rows:subgrid){
+  .row2,.row3{grid-template-rows:auto auto auto;row-gap:0}
+  .row2>.field,.row3>.field{display:grid;grid-template-rows:subgrid;grid-template-columns:minmax(0,1fr);grid-row:span 3;margin-bottom:12px}
+  .row2>.field>.lbl,.row3>.field>.lbl{align-self:end}
+}
+@supports not (grid-template-rows:subgrid){
+  .row2,.row3{align-items:stretch}
+  .row2>.field,.row3>.field{display:flex;flex-direction:column}
+  .row2>.field>.lbl,.row3>.field>.lbl{flex:1 0 auto;display:flex;flex-wrap:wrap;align-items:flex-end;align-content:flex-end;gap:0 .3em}
+}
+.stack>.field{margin-bottom:12px}
+.reading-title .unit{font-weight:400}
+.lbl .unit{white-space:nowrap}
+.field>.lbl{overflow-wrap:break-word}
+@media (max-width:359px){ html[lang=ta] .row2>.field>.lbl,html[lang=ta] .row3>.field>.lbl{font-size:.94rem} }
+/* Long names / villages never push things sideways */
+.eb-view>span{flex:1 1 12em;min-width:0;overflow-wrap:anywhere}
+.item-head>div:first-child{flex:1 1 auto;min-width:0}
+.item-head>div:last-child{flex:0 0 auto}
+.item-name,.item-meta{overflow-wrap:anywhere}
+.sync-tag{max-width:100%;white-space:normal}
+.due-row label{flex:0 0 auto}
+.due-row input[type=date]{width:auto;flex:1 1 150px;min-width:0;max-width:240px}
+@media (max-width:400px){ .row3{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:300px){ .row2,.row3{grid-template-columns:1fr} }
+@media (max-width:360px){ html[lang=ta] .tabbar button{font-size:.66rem} html[lang=ta] .brand .title{font-size:1rem} }
+.kv dd .sync-tag{overflow-wrap:normal}
+@media (max-width:359px){
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .kv dt{border-bottom:0;padding:6px 0 0;font-size:.88rem}
+  .kv dd{padding:0 0 6px}
+}

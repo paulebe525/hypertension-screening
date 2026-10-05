@@ -8,7 +8,7 @@ var STORE_KEY = 'htnScreening.v1.records';
 var PREF_KEY = 'htnScreening.v1.prefs';
 var SYNC_KEY = 'htnScreening.v1.sync';        // {url, key, lastSyncAt}
 var DEVICE_KEY = 'htnScreening.v1.deviceId';  // generated once per phone/browser
-var APP_VERSION = '1.3';
+var APP_VERSION = '1.3.1';
 // Built-in village list (exact spellings from the project lead). Used until the sheet's Villages tab
 // or a local fallback list provides one. Precedence: sheet (non-empty) > local list > these defaults.
 var DEFAULT_VILLAGES = ['Gudimallur', 'Avarakarai', 'Maniyampattu'];

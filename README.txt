@@ -1,4 +1,4 @@
-Hypertension Screening – Version 1.3 (installable app + offline, Google Sheet sync, Entered by, village list)
+Hypertension Screening – Version 1.3.1 (installable app + offline, Google Sheet sync, Entered by, village list)
 Scudder College of Nursing, Ranipet (Digital Health)
 
 HOW TO OPEN
@@ -92,3 +92,14 @@ INSTALLABLE APP + OFFLINE MODE (v1.3, Progressive Web App)
     first if a form is half-filled). Old caches are deleted. Records are never affected.
   - Publishing a new version: change VERSION in sw.js (and the ?v= numbers in index.html
     and the SHELL list in sw.js if app.js/styles.css changed).
+
+LAYOUT FIXES (v1.3.1)
+  - "4. Screening details": Screening date and "Screened by" are now full width, one below the
+    other (on iPhone the date box used to overflow into the Screened by box).
+  - All date boxes (screening date, follow-up due date, recheck date) are left-aligned and fit
+    their space on iPhone and Android.
+  - Side-by-side boxes (systolic/diastolic, height/weight, recheck readings) are always equal
+    width and line up even when one label wraps (Tamil); "mmHg" moved next to "Reading 1/2".
+  - Result and record details use a fixed label column; on very small phones (<360 px wide)
+    each label sits above its value. Long names/villages wrap instead of overflowing.
+  - Age box is full width like the other boxes; Tamil tab labels no longer break mid-word.
